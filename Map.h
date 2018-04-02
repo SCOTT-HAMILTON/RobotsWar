@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <random>
 
 #include "Tileset.h"
 #include "Renderer.h"
@@ -16,6 +17,7 @@ public:
     virtual ~Map();
     void draw(sf::RenderTarget &target);
     void dropToRenderer(Renderer &renderer);
+    sf::Vector2f getRandomFreeCase();
 
 private:
     int nb_w;

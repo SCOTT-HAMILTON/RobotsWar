@@ -1,8 +1,8 @@
 #include "Renderer.h"
 
-Renderer::Renderer()
+Renderer::Renderer() :
+    scale(1, 1)
 {
-    //ctor
 }
 
 Renderer::~Renderer()
@@ -15,6 +15,7 @@ void Renderer::render(sf::RenderTarget &target){
     for (std::size_t i = 0; i < frameitems.size(); i++){
         if (frameitems[i].texture == nullptr)continue;
         sf::Sprite sp((*(frameitems[i].texture)), frameitems[i].rect);
+        sp.scale(2, 2);
         sp.setPosition(frameitems[i].pos);
         target.draw(sp);
     }
@@ -27,5 +28,9 @@ void Renderer::addRenderItem(sf::Texture *texture, const sf::Vector2f &pos, sf::
         rect.width = texture->getSize().x;
         rect.height = texture->getSize().y;
     }
-    frameitems.push_back({texture, pos, rect});
+    frameitems.push_back({texture, {pos.x*scale.x, pos.y*scale.y}, rect});
+}
+
+void Renderer::setScale(const sf::Vector2f &scale){
+    this->scale = scale;
 }
