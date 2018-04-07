@@ -14,7 +14,7 @@ const std::string &ScriptCommand::getType(){
     return type;
 }
 
-const void *ScriptCommand::getProp(const std::string &name){
+const vartype &ScriptCommand::getProp(const std::string &name){
     return props[name];
 }
 

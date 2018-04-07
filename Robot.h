@@ -21,9 +21,12 @@ public:
     const std::string &getPath();
     void initReader(Robot *robot);
     void getScriptCommands(std::size_t start, std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
-    const void* getScriptVar(const std::string &var);
+    const vartype getScriptVar(const std::string &var);
     int scriptNbCommands();
     void move();
+    void setScriptVar(const std::string &var, float val);
+
+    void displayScriptVars();
 
 private:
     std::string author;

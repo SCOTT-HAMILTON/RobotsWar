@@ -8,9 +8,12 @@
 #include <memory>
 #include <map>
 #include <variant>
-#include <mpParser.h>
 
+#include "ScriptBlock.h"
 #include "MoveCommand.h"
+#include "VarSetCommmand.h"
+
+using vartype = std::variant<float>;
 
 class ScriptReader
 {
@@ -19,12 +22,15 @@ public:
     virtual ~ScriptReader();
     void getCommands(std::size_t start, std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
     int nbCommands();
-    const void* getVar(const std::string &var);
+    const vartype &getVar(const std::string &var);
+    void setVar(const std::string &var, float val);
+
+    void displayMainBlockVars();
 
 private:
     std::vector<std::shared_ptr<ScriptCommand>> commands;
-    std::map<std::string, std::variant<void*>> vars;
-    std::map<std::string, mup::Value> mupvars;
+    std::map<std::string, vartype> vars;
+    std::shared_ptr<ScriptBlock> mainblock;
 };
 
 #endif // SCRIPTREADER_H

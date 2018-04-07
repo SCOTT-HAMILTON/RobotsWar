@@ -1,1 +1,3 @@
-move(1,0)
+loop:
+move(20,5)
+end

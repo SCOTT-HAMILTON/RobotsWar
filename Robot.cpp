@@ -63,6 +63,14 @@ int Robot::scriptNbCommands(){
     return reader.nbCommands();
 }
 
-const void* Robot::getScriptVar(const std::string &var){
+const vartype Robot::getScriptVar(const std::string &var){
     return reader.getVar(var);
+}
+
+void Robot::setScriptVar(const std::string &var, float val){
+    reader.setVar(var, val);
+}
+
+void Robot::displayScriptVars(){
+    reader.displayMainBlockVars();
 }
