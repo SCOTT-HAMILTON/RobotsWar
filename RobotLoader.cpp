@@ -71,23 +71,16 @@ void RobotLoader::updateScripts(float dt){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             std::string type = command->getType();
             if (type == "move"){
+                command->update();
                 sf::Vector2f pos = robots[i].getPos();
-                float offsetx = std::get<float>(command->getProp("offsetx"));
-                float offsety = std::get<float>(command->getProp("offsety"));
-                if (std::isnan(offsetx)){
-                    std::string varname = command->getStringProp("offsetx");
-                    offsetx = std::get<float>(robots[i].getScriptVar(varname));
-                }
-                if (std::isnan(offsety)){
-                    std::string varname = command->getStringProp("offsety");
-                    offsety = std::get<float>(robots[i].getScriptVar(varname));
-                }
+                double offsetx = command->getProp("offsetx");
+                double offsety = command->getProp("offsety");
                 pos.x += offsetx*dt;
                 pos.y += offsety*dt;
                 robots[i].setPos(pos);
             }else if (type == "varset"){
                 command->update();
-                robots[i].setScriptVar(command->getStringProp("varname"), std::get<float>(command->getProp("val")));
+                robots[i].setScriptVar(command->getStringProp("varname"), command->getProp("val"));
             }
         }
     }

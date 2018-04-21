@@ -4,7 +4,6 @@
 #include "Map.h"
 #include "Renderer.h"
 #include "RobotLoader.h"
-
 class FunctorRandomPos{
 public:
     FunctorRandomPos(Map *_map) :
@@ -19,8 +18,13 @@ private:
     Map *_map;
 };
 
+void testparser(const std::string &expr){
+}
+
 int main()
 {
+    testparser("x*x");
+
     Map mymap(10, 10);
     Renderer renderer;
     renderer.setScale(sf::Vector2f(4, 4));

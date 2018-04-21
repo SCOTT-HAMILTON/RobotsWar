@@ -1,3 +1,0 @@
-loop:
-move(20,5)
-end

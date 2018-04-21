@@ -1,6 +1,7 @@
 #include "ScriptCommand.h"
 
-ScriptCommand::ScriptCommand(const std::string &type)
+ScriptCommand::ScriptCommand(std::weak_ptr<ScriptBlock> block, const std::string &type) :
+    myblock(block)
 {
     this->type = type;
 }
@@ -14,7 +15,7 @@ const std::string &ScriptCommand::getType(){
     return type;
 }
 
-const vartype &ScriptCommand::getProp(const std::string &name){
+double ScriptCommand::getProp(const std::string &name){
     return props[name];
 }
 

@@ -7,39 +7,39 @@
 #include <map>
 #include <vector>
 #include <memory>
-#include <atmsp.h>
+#include <fparser.hh>
+
+class ScriptCommand;
 
 #include "ScriptCommand.h"
 
-struct Parser{
-
-    ATMSB<float> bytecode;
-    ATMSP<float> parser;
-};
+typedef FunctionParser Parser;
 
 class ScriptBlock;
 
 struct CurrenBlock{
     std::weak_ptr<ScriptBlock> current_block;
     std::size_t index;
+    int nb_in_wait;
 };
 
 class ScriptBlock
 {
 public:
-    ScriptBlock(const std::string &type = "basicblock", bool ended = false);
+    ScriptBlock(const std::string &type = "basicblock", bool ended = false, std::map<std::string, double*> parentvars = std::map<std::string, double*>());
     virtual ~ScriptBlock();
     const std::string &getType();
-    const vartype &getVar(const std::string &name);
+    double getVar(const std::string &name);
     const std::string &getString(const std::string &name);
     void getCommands(std::size_t start, std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
+    std::weak_ptr<ScriptBlock> getCurBlock();
     std::weak_ptr<Parser> getParser();
     int nbCommands();
 
-    void addVar(const std::string &name, const vartype &var);
+    void addVar(const std::string &name, double var);
     void addString(const std::string &name, const std::string &str);
     void addCommand(const std::weak_ptr<ScriptCommand> &command);
-    int evalParserExpr(const std::string &expr, float &val);
+    int evalParserExpr(const std::string &expr, double &val);
     void setEnded();
     void addBlock(const std::string &block);
     void addBlockEnd();
@@ -54,7 +54,8 @@ public:
 
 protected:
     std::string type;
-    std::map<std::string, vartype> vars;
+    std::map<std::string, double> vars;
+    std::map<std::string, double*> parentvars;
     std::map<std::string, std::string> strings;
     std::vector<std::weak_ptr<ScriptCommand>> commands;
     bool ended;
@@ -63,6 +64,8 @@ protected:
     CurrenBlock current_block;
     std::shared_ptr<Parser> parser;
     std::weak_ptr<ScriptBlock> loopblock;
+
+    int debug_times;
 };
 
 #endif // SCRIPTBLOCK_H

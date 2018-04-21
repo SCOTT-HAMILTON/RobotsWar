@@ -13,8 +13,6 @@
 #include "MoveCommand.h"
 #include "VarSetCommmand.h"
 
-using vartype = std::variant<float>;
-
 class ScriptReader
 {
 public:
@@ -22,14 +20,13 @@ public:
     virtual ~ScriptReader();
     void getCommands(std::size_t start, std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
     int nbCommands();
-    const vartype &getVar(const std::string &var);
-    void setVar(const std::string &var, float val);
+    double getVar(const std::string &var);
+    void setVar(const std::string &var, double val);
 
     void displayMainBlockVars();
 
 private:
     std::vector<std::shared_ptr<ScriptCommand>> commands;
-    std::map<std::string, vartype> vars;
     std::shared_ptr<ScriptBlock> mainblock;
 };
 

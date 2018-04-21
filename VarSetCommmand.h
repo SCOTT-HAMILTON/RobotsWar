@@ -11,13 +11,12 @@
 class VarSetCommmand : public ScriptCommand
 {
 public:
-    VarSetCommmand(std::shared_ptr<ScriptBlock> block, const std::string &expr, const std::string &var);
+    VarSetCommmand(std::weak_ptr<ScriptBlock> block, const std::string &expr, const std::string &var);
     virtual ~VarSetCommmand();
 
     virtual void update();
 
 private:
-    std::weak_ptr<ScriptBlock> myblock;
     std::string expr;
     std::string varname;
     float value;

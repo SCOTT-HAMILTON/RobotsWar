@@ -10,15 +10,15 @@ enum TYPE{VAR, CONSTANT};
 struct offset{
     TYPE type;
     std::string strval;
-    float floatval;
+    double doubleval;
 };
 
 class MoveCommand : public ScriptCommand
 {
 public:
-    MoveCommand(offset x, offset y);
+    MoveCommand(std::shared_ptr<ScriptBlock> block, offset x, offset y);
     virtual ~MoveCommand();
-
+    virtual void update();
 
 private:
     offset offsetx;

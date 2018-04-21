@@ -1,27 +1,40 @@
 #include "MoveCommand.h"
 #include <cmath>
 
-MoveCommand::MoveCommand(offset x, offset y) :
-    ScriptCommand("move"), offsetx(x), offsety(y)
+MoveCommand::MoveCommand(std::shared_ptr<ScriptBlock> block, offset x, offset y) :
+    ScriptCommand(block, "move"), offsetx(x), offsety(y)
 {
     std::cout << "new move !!" << std::endl;
-    if (offsetx.type == CONSTANT)props.insert(std::pair<std::string, vartype>("offsetx", offsetx.floatval));
+    if (offsetx.type == CONSTANT)props.insert(std::pair<std::string, double>("offsetx", offsetx.doubleval));
     else{
-        offsetx.floatval = NAN;
-        props.insert(std::pair<std::string, vartype>("offsetx", offsetx.floatval));
+        offsetx.doubleval = NAN;
+        props.insert(std::pair<std::string, double>("offsetx", offsetx.doubleval));
         strings.insert(std::pair<std::string, std::string>("offsetx", offsetx.strval));
-        std::cout << "strings test insertion : " << offsetx.strval << std::endl;
     }
-    if (offsety.type == CONSTANT)props.insert(std::pair<std::string, vartype>("offsety", offsety.floatval));
+    if (offsety.type == CONSTANT)props.insert(std::pair<std::string, double>("offsety", offsety.doubleval));
     else{
-        offsety.floatval = NAN;
-        props.insert(std::pair<std::string, vartype>("offsety", offsety.floatval));
+        offsety.doubleval = NAN;
+        props.insert(std::pair<std::string, double>("offsety", offsety.doubleval));
         strings.insert(std::pair<std::string, std::string>("offsety", offsety.strval));
-        std::cout << "strings test insertion : " << offsety.strval << std::endl;
     }
+
+    update();
 }
 
 MoveCommand::~MoveCommand()
 {
     //dtor
+}
+
+void MoveCommand::update(){
+    auto ptr = myblock.lock();
+    if (ptr != nullptr){
+        if (strings.find("offsetx") != strings.end()){
+            props["offsetx"] = ptr->getVar(strings["offsetx"]);
+            //std::cout << "off x var name : " << strings["offsetx"] << " value : " << props["offsetx"] << std::endl;
+        }
+        if (strings.find("offsety") != strings.end()){
+            props["offsety"] = ptr->getVar(strings["offsety"]);
+        }
+    }
 }

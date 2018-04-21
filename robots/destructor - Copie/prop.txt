@@ -1,2 +1,0 @@
-author:JIB
-nb_frames:12

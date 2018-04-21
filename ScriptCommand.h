@@ -5,22 +5,26 @@
 #include <string>
 #include <variant>
 #include <map>
+#include <memory>
 
-using vartype = std::variant<float>;
+class ScriptBlock;
+
+#include "ScriptBlock.h"
 
 class ScriptCommand
 {
 public:
-    ScriptCommand(const std::string &type);
+    ScriptCommand(std::weak_ptr<ScriptBlock> block, const std::string &type);
     virtual ~ScriptCommand();
     const std::string &getType();
-    const vartype &getProp(const std::string &name);
+    double getProp(const std::string &name);
     const std::string &getStringProp(const std::string &name);
     virtual void update(){}
 
 protected:
+    std::weak_ptr<ScriptBlock> myblock;
     std::string type;
-    std::map<std::string, vartype> props;
+    std::map<std::string, double> props;
     std::map<std::string, std::string> strings;
 };
 
