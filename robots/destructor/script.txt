@@ -3,8 +3,8 @@ double y=0
 double off=1
 
 loop:
-x=x-off
-y=y+off
-off=off*1.01
-move(x,y)
+	x=x-off
+	y=y+off
+	off=off*1.01
+	move(x,y)
 end

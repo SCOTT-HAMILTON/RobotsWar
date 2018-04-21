@@ -34,8 +34,7 @@ ScriptReader::ScriptReader(const std::string &path_script)
         while (continuer && !file_script.eof()){
             file_script.getline(buffer, sizeof(buffer));
             std::string line(buffer);
-            if (line == "" || line == " " || line == "\n" || line == "\r\n"){
-            }
+            line.erase(remove_if(line.begin(), line.end(), [](char c){return c == '\t';} ), line.end());
             std::cout << "LINE : " << line << std::endl;
             std::shared_ptr<ScriptCommand> ptr;
 
