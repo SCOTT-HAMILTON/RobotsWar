@@ -11,8 +11,6 @@ Robot::Robot(const std::string &author, int nb_frames, const std::string &dir) :
     id_img = 0;
     tile_size = img.getSize().x/nb_frames;
     updateRect();
-    std::cout << "rect : " << rect.left << ", " << rect.top << ", " << rect.width << ", " << rect.height << std::endl;
-
 }
 
 
@@ -55,8 +53,8 @@ const std::string &Robot::getPath(){
     return path;
 }
 
-void Robot::getScriptCommands(std::size_t start, std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands){
-    reader.getCommands(start, nbCommands, commands);
+void Robot::getScriptCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands){
+    reader.getCommands(nbCommands, commands);
 }
 
 int Robot::scriptNbCommands(){

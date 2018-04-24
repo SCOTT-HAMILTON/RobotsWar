@@ -32,7 +32,12 @@ RobotLoader::RobotLoader()
                 author = line.substr(7, line.size()-7);
                 std::cout << "author : " << author << std::endl;
             }else if (line.rfind("nb_frames:", 0) == 0) {
-                nb_frames = std::atoi(line.substr(10, line.size()-7).c_str());
+                std::string tmpstr = line.substr(10, line.size()-7);
+                try {
+                    nb_frames = std::stoi(tmpstr);
+                }catch (std::exception &e){
+                    std::cout << "error converting string " << tmpstr << " to int : " << e.what() << std::endl;;
+                }
                 std::cout << "nb_frames : " << nb_frames << std::endl;
             }
         }
@@ -66,10 +71,11 @@ void RobotLoader::updateScripts(float dt){
     std::vector<std::weak_ptr<ScriptCommand>> commands;
     for (std::size_t i = 0; i < robots.size(); i++){
         commands.clear();
-        robots[i].getScriptCommands(0, robots[i].scriptNbCommands(), commands);
+        robots[i].getScriptCommands(5, commands);
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             std::string type = command->getType();
+            //std::cout << "type cmd : " << type << std::endl;
             if (type == "move"){
                 command->update();
                 sf::Vector2f pos = robots[i].getPos();
@@ -78,9 +84,6 @@ void RobotLoader::updateScripts(float dt){
                 pos.x += offsetx*dt;
                 pos.y += offsety*dt;
                 robots[i].setPos(pos);
-            }else if (type == "varset"){
-                command->update();
-                robots[i].setScriptVar(command->getStringProp("varname"), command->getProp("val"));
             }
         }
     }

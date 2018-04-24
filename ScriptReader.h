@@ -12,13 +12,16 @@
 #include "ScriptBlock.h"
 #include "MoveCommand.h"
 #include "VarSetCommmand.h"
+#include "IfBlock.h"
+#include "ElseIfBlock.h"
+#include "ElseBlock.h"
 
 class ScriptReader
 {
 public:
     ScriptReader(const std::string &path_script);
     virtual ~ScriptReader();
-    void getCommands(std::size_t start, std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
+    void getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
     int nbCommands();
     double getVar(const std::string &var);
     void setVar(const std::string &var, double val);

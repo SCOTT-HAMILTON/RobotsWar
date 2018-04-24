@@ -1,16 +1,18 @@
 #ifndef IFBLOCK_H
 #define IFBLOCK_H
 
+#include <iostream>
+#include <string>
 
-class IfBlock
+#include "ConditionBlock.h"
+
+class IfBlock : public ConditionBlock
 {
 public:
-    IfBlock();
+    IfBlock(const std::string &boolexpr);
     virtual ~IfBlock();
+    virtual bool canEnter();
 
-protected:
-
-private:
 };
 
 #endif // IFBLOCK_H

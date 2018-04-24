@@ -22,6 +22,7 @@ void VarSetCommmand::update(){
         props["val"] = val;
        // std::cout << "new value " << val << " for " << varname << std::endl;
         value = val;
+
         ptrblock->addVar(varname, val);
     }else std::cout << "ptrblock is nullptr" << std::endl;
 

@@ -1,5 +1,10 @@
 @echo off
 
+echo Enter g++ path, ex "C:\mingw64\bin" :  
+set /P g++path=""
+
+set PATH=%PATH%;%g++path%;
+
 echo Enter SFML location (this folder needs to have a lib and a include subfolder) :
 set /P SFMLdir=""
 

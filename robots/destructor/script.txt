@@ -1,10 +1,15 @@
-double x=30
-double y=0
-double off=1
+double i= 0
+double off = 1
+double speed=30
 
 loop:
-	x=x-off
-	y=y+off
-	off=off*1.01
-	move(x,y)
+	i = i+off
+	move(speed, speed);
+	if (i>50):
+		speed = -speed
+		off = -off
+	else if (i<-10):
+		speed = -speed;
+		off = -off
+	end
 end

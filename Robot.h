@@ -20,7 +20,7 @@ public:
     void updateFrame();
     const std::string &getPath();
     void initReader(Robot *robot);
-    void getScriptCommands(std::size_t start, std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
+    void getScriptCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
     double getScriptVar(const std::string &var);
     int scriptNbCommands();
     void move();
