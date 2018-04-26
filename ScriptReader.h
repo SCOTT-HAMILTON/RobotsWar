@@ -15,6 +15,8 @@
 #include "IfBlock.h"
 #include "ElseIfBlock.h"
 #include "ElseBlock.h"
+#include "WhileBlock.h"
+#include "ForBlock.h"
 
 class ScriptReader
 {

@@ -46,13 +46,16 @@ ScriptReader::ScriptReader(const std::string &path_script)
             line.erase(remove_if(line.begin(), line.end(), [](char c){return c == '\t' || c == ';';} ), line.end());
             std::cout << "LINE : " << line << std::endl;
             std::shared_ptr<ScriptCommand> ptr;
+            bool entered = false;
 
             /* SYNTAXE TEST */
 
             if (line == "end"){
+                entered = true;
                 mainblock->addBlockEnd();
             }
             else if (line.rfind("move(", 0) == 0) {
+                entered = true;
                 line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
                 line = line.substr(5, line.size()-6);
                 std::vector<std::string> params = split(line, ',');
@@ -87,6 +90,43 @@ ScriptReader::ScriptReader(const std::string &path_script)
 
                 mainblock->addCommand(std::weak_ptr<ScriptCommand>(commands.back()));
 
+            }else if (line.rfind("for", 0) == 0){
+                entered = true;
+                line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
+                std::cout << "new for !! line : " << line << std::endl;
+                std::vector<std::string> tab = split(line.substr(4, line.size()-5), ',');
+                std::string condition_expr;
+                if (tab.size()!=3){
+                    std::cout << "segmentation fault : " << line << std::endl;
+                    continuer = false;
+                    break;
+                }
+                condition_expr = tab[1];
+                std::string tmp_var = tab[0];
+                std::string incremeteexpr = tab[2];
+                tab = split(tmp_var, '=');
+                if (tab.size()!=2){
+                    std::cout << "segmentation fault : " << line << std::endl;
+                    continuer = false;
+                    break;
+                }
+                std::string varname = tab[0];
+                std::string startexpr = tab[1];
+                replace_all(condition_expr, "and", "&");
+                replace_all(condition_expr, "or", "&");
+                auto block = std::make_shared<ForBlock>(varname, condition_expr, startexpr, incremeteexpr);
+                mainblock->addBlock(block);
+                std::cout << "condition : " << condition_expr << ", varname : " << varname << ", startexpr " << startexpr << ", incremente expr ! " << incremeteexpr << std::endl;
+            }else if (line.rfind("while", 0) == 0){
+                entered = true;
+                line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
+                std::cout << "new while !! line : " << line << std::endl;
+                std::string condition_expr = line.substr(6, line.size()-7);
+                replace_all(condition_expr, "and", "&");
+                replace_all(condition_expr, "or", "&");
+                auto block = std::make_shared<WhileBlock>(condition_expr);
+                mainblock->addBlock(block);
+                std::cout << "condition : " << condition_expr << std::endl;
             }else if (line.rfind("double ", 0) == 0) {
                 line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
                 line = line.substr(6, line.size()-6);
@@ -109,7 +149,7 @@ ScriptReader::ScriptReader(const std::string &path_script)
                     break;
                 }
                 mainblock->addVar(name, val);
-            }if (line.rfind('=') != line.npos){
+            }if (line.rfind('=') != line.npos && !entered){
                 line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
                 std::vector<std::string> tab = split(line, '=');
                 if ( tab.size() != 2)break;
@@ -169,7 +209,8 @@ ScriptReader::ScriptReader(const std::string &path_script)
                 auto block = std::make_shared<ElseBlock>(mainblock->getLastEndedBlock());
                 mainblock->addBlock(block);
             }else if (line.back() == ':'){
-                mainblock->addBlock(line.substr(0, line.size()-1));
+                line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
+                mainblock->addBlock(line);
             }
             /*-----SYNTAXE TEST END-----*/
         }
@@ -191,7 +232,8 @@ ScriptReader::~ScriptReader()
     //dtor
 }
 void ScriptReader::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands){
-    mainblock->getCommands(nbCommands, pCommands);
+    bool tmp;
+    mainblock->getCommands(nbCommands, pCommands, tmp);
 }
 
 int ScriptReader::nbCommands(){

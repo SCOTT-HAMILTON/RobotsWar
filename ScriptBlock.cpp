@@ -56,15 +56,16 @@ void ScriptBlock::addString(const std::string &name, const std::string &str){
         strings[name] = str;
     }else strings.insert(std::pair<std::string, std::string>(name, str));
 }
-std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands){
+std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
     bool ismainblock = type == "mainblock";
+    commandsended = false;
     std::size_t commands_done = 0;
     std::size_t size_pcommandsstart = pCommands.size();
     if (ismainblock){
         if (asloopblock){
             std::shared_ptr<ScriptBlock> block = loopblock.lock();
             if (block != nullptr && block->canEnter()){
-                block->getCommands(nbCommands, pCommands);
+                block->getCommands(nbCommands, pCommands, commandsended);
             }
         }
     }else {
@@ -77,7 +78,7 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
                 auto ptr = block.lock();
                 if (ptr != nullptr){
                     if (ptr->canEnter()){
-                        commands_done += ptr->getCommands(nbCommands-commands_done, pCommands);
+                        commands_done += ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
                     }
                 }else{
                     std::cout << "block ptr of commands order is nullptr !!" << std::endl;
@@ -101,6 +102,7 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
         if (last_ended_properly)index_lastcmd++;
         if (index_lastcmd>=commandsorder.size()){
             index_lastcmd = 0;
+            commandsended = true;
         }
     }
     return commands_done;
@@ -168,6 +170,9 @@ int ScriptBlock::evalParserExpr(const std::string &expr, double &val){
             i++;
         }
     }
+
+    //if (type == "forblock") std::cout << "varstr : " << varsstr << std::endl;
+
     int code;
     std::shared_ptr<Parser> ptrparser;
     if (exprevaluated.find(expr) != exprevaluated.end()){

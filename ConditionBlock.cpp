@@ -3,7 +3,6 @@
 ConditionBlock::ConditionBlock(const std::string &boolexpr) :
     ScriptBlock("conditionblock"), expr(boolexpr)
 {
-    canEnter();
 }
 
 

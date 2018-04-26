@@ -81,8 +81,8 @@ void RobotLoader::updateScripts(float dt){
                 sf::Vector2f pos = robots[i].getPos();
                 double offsetx = command->getProp("offsetx");
                 double offsety = command->getProp("offsety");
-                pos.x += offsetx*dt;
-                pos.y += offsety*dt;
+                pos.x += offsetx;
+                pos.y += offsety;
                 robots[i].setPos(pos);
             }
         }

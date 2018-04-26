@@ -31,12 +31,16 @@ void MoveCommand::update(){
     if (ptr != nullptr){
         if (strings.find("offsetx") != strings.end()){
             double val = 0;
-            ptr->evalParserExpr(strings["offsetx"], val);
+            if (ptr->varExist(strings["offsetx"])){
+                val = ptr->getVar(strings["offsetx"]);
+            }else ptr->evalParserExpr(strings["offsetx"], val);
             props["offsetx"] = val;
         }
         if (strings.find("offsety") != strings.end()){
             double val = 0;
-            ptr->evalParserExpr(strings["offsety"], val);
+            if (ptr->varExist(strings["offsety"])){
+                val = ptr->getVar(strings["offsety"]);
+            }else ptr->evalParserExpr(strings["offsety"], val);
             props["offsety"] = val;
         }
     }

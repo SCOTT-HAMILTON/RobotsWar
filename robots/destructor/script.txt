@@ -1,15 +1,20 @@
 double i= 0
 double off = 1
-double speed=30
+double speed=5
 
 loop:
 	i = i+off
 	move(speed, speed);
-	if (i>50):
+	if (i>10):
 		speed = -speed
 		off = -off
 	else if (i<-10):
-		speed = -speed;
+		speed = -speed
 		off = -off
+	end
+
+	
+	for (tmp = 0, tmp<10, 1):
+		
 	end
 end
