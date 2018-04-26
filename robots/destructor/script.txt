@@ -4,6 +4,7 @@ double speed=5
 
 loop:
 	i = i+off
+	
 	move(speed, speed);
 	if (i>10):
 		speed = -speed
@@ -17,4 +18,7 @@ loop:
 	for (tmp = 0, tmp<10, 1):
 		
 	end
+
+	print  (  " i: " + i )  ;
+
 end

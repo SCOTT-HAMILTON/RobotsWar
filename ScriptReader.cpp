@@ -54,7 +54,7 @@ ScriptReader::ScriptReader(const std::string &path_script)
                 entered = true;
                 mainblock->addBlockEnd();
             }
-            else if (line.rfind("move(", 0) == 0) {
+            else if (line.rfind("move", 0) == 0) {
                 entered = true;
                 line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
                 line = line.substr(5, line.size()-6);
@@ -88,7 +88,83 @@ ScriptReader::ScriptReader(const std::string &path_script)
 
                 commands.push_back(ptr);
 
-                mainblock->addCommand(std::weak_ptr<ScriptCommand>(commands.back()));
+                mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
+
+            }else if (line.rfind("print", 0) == 0) {
+                std::size_t tmpindex = line.find_first_of('(')+1;
+                line = line.substr(tmpindex, line.find_last_of(')')-tmpindex);
+                std::cout << "new print command !! line : " << line  << std::endl;
+                std::vector<PrintElem> elems;
+                bool onstr = false, onexpr = false, strfinished = true;
+                std::string str("");
+                bool error = false;
+                for (std::size_t i = 0; i < line.size(); i++){
+                    if (line[i] == '+'){
+                        if (!onstr && !onexpr){
+                            error = true;
+                            break;
+                        }
+                        if (onexpr){
+                            elems.push_back({str, EXPR});
+                            std::cout << "expression for print : " << str << std::endl;
+                        }else{
+                            elems.push_back({str, STRING});
+                            std::cout << "string for print : " << str << std::endl;
+                        }
+                        onexpr = false;
+                        strfinished = true;
+                        onstr = false;
+                        str = "";
+                    }
+                    else if (onstr){
+                        if (line[i] != '"' && !strfinished )str += line[i];
+                        else if (line[i] == '"'){
+                            if (str.size()>1 && str.back() == '\\'){
+                                str.pop_back();
+                                str += '"';
+                            }else{
+                                strfinished = true;
+                            }
+                        }
+                    }else if (onexpr){
+                        if (!isspace(line[i]))str += line[i];
+                    }
+                    else if (line[i] == '"'){
+                        str = "";
+                        onstr = true;
+                        strfinished = false;
+                    }else if (!std::isspace(line[i])){
+                        str = "";
+                        str += line[i];
+                        onexpr = true;
+                    }
+                    std::cout << "str : " << str << ", " << line[i] << std::endl;
+                }
+
+                if (error){
+                    std::cout << "segmentation fault : " << line << std::endl;
+                    continuer = false;
+                    break;
+                }
+
+                if (onexpr){
+                    elems.push_back({str, EXPR});
+                    std::cout << "expression for (out loop) print : " << str << std::endl;
+                }else{
+                    elems.push_back({str, STRING});
+                    std::cout << "string for (out loop) print : " << str << std::endl;
+                }
+
+                std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
+                if (ptrblock.lock() != nullptr){
+                    ptr = std::make_shared<PrintCommand>(ptrblock, elems);
+                }else{
+                    ptr = std::make_shared<PrintCommand>(mainblock, elems);
+                }
+
+                commands.push_back(ptr);
+
+                mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
 
             }else if (line.rfind("for", 0) == 0){
                 entered = true;
@@ -180,10 +256,10 @@ ScriptReader::ScriptReader(const std::string &path_script)
                     commandptr = std::make_shared<VarSetCommmand>(mainblock, tab[1], tab[0]);
                 }
 
-
                 commands.push_back(commandptr);
+
                 mainblock->addVar(tab[0], val);
-                mainblock->addCommand(std::weak_ptr<ScriptCommand>(commands.back()));
+                mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
             }else if (line.rfind("if", 0) == 0){
                 line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
                 std::cout << "new if !! line : " << line << std::endl;

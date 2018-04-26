@@ -17,6 +17,7 @@
 #include "ElseBlock.h"
 #include "WhileBlock.h"
 #include "ForBlock.h"
+#include "PrintCommand.h"
 
 class ScriptReader
 {
@@ -31,8 +32,8 @@ public:
     void displayMainBlockVars();
 
 private:
-    std::vector<std::shared_ptr<ScriptCommand>> commands;
     std::shared_ptr<ScriptBlock> mainblock;
+    std::vector<std::shared_ptr<ScriptCommand>> commands;
 };
 
 #endif // SCRIPTREADER_H

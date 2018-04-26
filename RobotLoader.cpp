@@ -75,7 +75,6 @@ void RobotLoader::updateScripts(float dt){
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             std::string type = command->getType();
-            //std::cout << "type cmd : " << type << std::endl;
             if (type == "move"){
                 command->update();
                 sf::Vector2f pos = robots[i].getPos();
@@ -84,6 +83,9 @@ void RobotLoader::updateScripts(float dt){
                 pos.x += offsetx;
                 pos.y += offsety;
                 robots[i].setPos(pos);
+            }else if (type == "print"){
+                command->update();
+                std::cout << command->getStringProp("str") << std::endl;
             }
         }
     }
