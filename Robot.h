@@ -16,12 +16,13 @@ public:
     virtual ~Robot();
     void dropToRenderer(Renderer &renderer);
     void setPos(const sf::Vector2f &pos);
-    const sf::Vector2f &getPos();
+    const sf::Vector2f &getPos() const;
     void updateFrame();
     const std::string &getPath();
     void initReader(Robot *robot);
     void getScriptCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
     double getScriptVar(const std::string &var);
+    const std::string &getName();
     int scriptNbCommands();
     void move();
     void setScriptVar(const std::string &var, float val);
@@ -31,6 +32,7 @@ public:
 private:
     std::string author;
     std::string path;
+    std::string name;
     int nb_frames;
     sf::Texture texture;
     sf::IntRect rect;

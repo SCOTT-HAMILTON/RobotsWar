@@ -10,8 +10,8 @@ class Tileset
 public:
     Tileset(const std::string &tilespath, const int tile_size);
     virtual ~Tileset();
-    sf::IntRect getRectFromId(int id);
-    const sf::Texture *getTexture();
+    sf::IntRect getRectFromId(int id) const;
+    const sf::Texture *getTexture() const;
 
 private:
     int nb_w;

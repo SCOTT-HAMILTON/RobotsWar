@@ -4,6 +4,7 @@
 #include "Map.h"
 #include "Renderer.h"
 #include "RobotLoader.h"
+
 class FunctorRandomPos{
 public:
     FunctorRandomPos(Map *_map) :
@@ -25,18 +26,21 @@ int main()
 {
     testparser("x*x");
 
-    Map mymap(10, 10);
+    Map mymap(18, 18);
     Renderer renderer;
-    renderer.setScale(sf::Vector2f(4, 4));
+    renderer.setScale(sf::Vector2f(2, 2));
     RobotLoader robotloader;
     FunctorRandomPos posRandomizer(&mymap);
     robotloader.setRobotPoses(posRandomizer);
 
-    sf::RenderWindow fenetre(sf::VideoMode(40*TILE_SIZE, 40*TILE_SIZE), "SFML works!");
+    sf::RenderWindow fenetre(sf::VideoMode(mymap.getNbTilesWidth()*TILE_SIZE*renderer.getScale().x, mymap.getNbTilesHeight()*TILE_SIZE*renderer.getScale().y), "RobotsWar !!!");
     fenetre.setFramerateLimit(144);
 
     sf::Clock c;
     float dt;
+
+    sf::RectangleShape black_square(sf::Vector2f(16*renderer.getScale().x, 16*renderer.getScale().y));
+    black_square.setFillColor(sf::Color(0, 0, 0));
 
     while (fenetre.isOpen())
     {
@@ -49,7 +53,9 @@ int main()
                 fenetre.close();
         }
 
-        robotloader.updateScripts(dt);
+        robotloader.updateScripts(dt, mymap);
+        sf::Vector2f pos = robotloader.getRobot(0).getPos();
+        black_square.setPosition(pos.x*renderer.getScale().x, pos.y*renderer.getScale().y);
 
         //RENDERER DROPPING
         mymap.dropToRenderer(renderer);

@@ -67,7 +67,7 @@ void RobotLoader::updateRobotsImg(){
     }
 }
 
-void RobotLoader::updateScripts(float dt){
+void RobotLoader::updateScripts(float dt, Map &arenamap){
     std::vector<std::weak_ptr<ScriptCommand>> commands;
     for (std::size_t i = 0; i < robots.size(); i++){
         commands.clear();
@@ -82,11 +82,17 @@ void RobotLoader::updateScripts(float dt){
                 double offsety = command->getProp("offsety");
                 pos.x += offsetx;
                 pos.y += offsety;
-                robots[i].setPos(pos);
+
+                sf::FloatRect colliderect(pos.x, pos.y, TILE_SIZE, TILE_SIZE);
+                if (!arenamap.collide(colliderect))robots[i].setPos(pos);
             }else if (type == "print"){
                 command->update();
-                std::cout << command->getStringProp("str") << std::endl;
+                std::cout << robots[i].getName() << " >> " << command->getStringProp("str") << std::endl;
             }
         }
     }
+}
+
+const Robot &RobotLoader::getRobot(std::size_t index){
+    if (index<robots.size())return robots[index];
 }

@@ -3,6 +3,11 @@
 Robot::Robot(const std::string &author, int nb_frames, const std::string &dir) :
     path(dir), reader(path+"/script.txt")
 {
+    std::cout << "lol " << std::endl;
+    std::size_t index = path.find_last_of("/\\")+1;
+    if (index == path.npos)name = "defaultname";
+    else name = path.substr(index , path.size());
+    std::cout << "name : " << name << std::endl;
     this->author = author;
     this->nb_frames = nb_frames;
     sf::Image img;
@@ -34,7 +39,8 @@ void Robot::setPos(const sf::Vector2f &pos){
     this->pos = pos;
 }
 
-const sf::Vector2f &Robot::getPos(){
+const sf::Vector2f &Robot::getPos() const
+{
     return pos;
 }
 
@@ -71,4 +77,8 @@ void Robot::setScriptVar(const std::string &var, float val){
 
 void Robot::displayScriptVars(){
     reader.displayMainBlockVars();
+}
+
+const std::string &Robot::getName(){
+    return name;
 }

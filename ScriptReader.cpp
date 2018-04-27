@@ -53,6 +53,8 @@ ScriptReader::ScriptReader(const std::string &path_script)
             if (line == "end"){
                 entered = true;
                 mainblock->addBlockEnd();
+            }else if (line.rfind("//", 0) == 0){
+                std::cout << "com!" << std::endl;
             }
             else if (line.rfind("move", 0) == 0) {
                 entered = true;

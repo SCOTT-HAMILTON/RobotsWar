@@ -10,6 +10,7 @@
 #include "Robot.h"
 #include "Renderer.h"
 #include "ScriptCommand.h"
+#include "Map.h"
 
 class RobotLoader
 {
@@ -25,7 +26,8 @@ public:
         }
     }
     void updateRobotsImg();
-    void updateScripts(float dt);
+    void updateScripts(float dt, Map &arenamap);
+    const Robot &getRobot(std::size_t index);
 
 private:
     std::vector<Robot> robots;
