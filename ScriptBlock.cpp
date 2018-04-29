@@ -1,16 +1,19 @@
 #include "ScriptBlock.h"
+#include "BlockEntryCommand.h"
 #include <cstring>
 #include <cstdlib>
 
 ScriptBlock::ScriptBlock(const std::string &type, bool ended) :
     asloopblock(false), index_lastcmd(0)
 {
+    name = type;
     this->parentvars = parentvars;
     this->type = type;
     this->ended = ended;
-    current_block.index = 0;
     current_block.nb_in_wait = 0;
     debug_times = 0;
+
+    addVar("return", 0);
 }
 
 ScriptBlock::~ScriptBlock()
@@ -20,9 +23,36 @@ ScriptBlock::~ScriptBlock()
 double ScriptBlock::getVar(const std::string &name){
     auto ptrblock = current_block.current_block.lock();
     if (ptrblock != nullptr)return ptrblock->getVar(name);
-    if (parentvars.size() != 0 && parentvars.find(name) != parentvars.end())return *parentvars.at(name);
-    if (vars.find(name) != vars.end())return vars[name];
+    if (parentvars.find(name) != parentvars.end())return *parentvars.at(name);
+    if (vars.find(name) != vars.end())return vars.at(name);
+
     return double(0);
+}
+
+double *ScriptBlock::getVarPtr(const std::string &name){
+    std::cout << "               ASKING FOR VAR PTR " << name << " block " << type << std::endl;
+    auto ptrblock = current_block.current_block.lock();
+    if (ptrblock != nullptr)return ptrblock->getVarPtr(name);
+    if (parentvars.find(name) != parentvars.end())return parentvars.at(name);
+    if (vars.find(name) != vars.end())return &vars.at(name);
+
+    return nullptr;
+}
+
+std::string ScriptBlock::getVarName(std::size_t index){
+    auto ptrblock = current_block.current_block.lock();
+    if (ptrblock != nullptr)return ptrblock->getVarName(index);
+    std::size_t i = 0;
+    if (index>=vars.size()){
+        std::cout << "error index too big !! index : " << index << ", varssize : " << vars.size() << ", type : " << type << std::endl;
+    }else {
+        for (auto it = vars.begin(); it != vars.end(); it++){
+            if (i == index)return it->first;
+            i++;
+        }
+
+    }
+    return "";
 }
 
 const std::string &ScriptBlock::getString(const std::string &name){
@@ -35,17 +65,30 @@ const std::string &ScriptBlock::getString(const std::string &name){
 void ScriptBlock::addVar(const std::string &name, double var){
     auto ptr = current_block.current_block.lock() ;
     if (ptr != nullptr){
+
         ptr->addVar(name, var);
     }else{
 
         if (vars.find(name) != vars.end()){
             vars[name] = var;
+            //std::cout << "changing var " << name << " to " << var << " block " << type << std::endl;
         }else if (parentvars.find(name) != parentvars.end()){
             *parentvars[name] = var;
+            //std::cout << "changing parentvar " << name << " to " << var << " block " << type << std::endl;
         }else{
             vars.emplace(name, var);
             std::cout << " BLOCK " << type << " ADDING VAR " << name << " TO VARS !!!!!!" << std::endl;
         }
+    }
+}
+
+void ScriptBlock::addParentVar(const std::string &name, double *var){
+    auto ptr = current_block.current_block.lock() ;
+    if (ptr != nullptr){
+        ptr->addParentVar(name, var);
+    }else{
+        parentvars[name] = var;
+        std::cout << "new parentvar block " << type << " : " << name << " val " << *var << std::endl;
     }
 }
 
@@ -61,6 +104,7 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
     commandsended = false;
     std::size_t commands_done = 0;
     std::size_t size_pcommandsstart = pCommands.size();
+    tempcommands.clear();
     if (ismainblock){
         if (asloopblock){
             std::shared_ptr<ScriptBlock> block = loopblock.lock();
@@ -71,15 +115,16 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
     }else {
         if (index_lastcmd>=commandsorder.size())index_lastcmd = 0;
         bool last_ended_properly = true;
+        //if (type == "ifblock") std::cout << "if block nbcommands : " << nbCommands << ", nbcommandsorder : " << commandsorder.size() << std::endl;
         for (std::size_t i = index_lastcmd; i < commandsorder.size() && commands_done<nbCommands; i++){
             last_ended_properly = true;
             try{
                 auto block = std::get<std::weak_ptr<ScriptBlock>>(commandsorder[i]);
                 auto ptr = block.lock();
                 if (ptr != nullptr){
-                    if (ptr->canEnter()){
-                        commands_done += ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
-                    }
+                    tempcommands.push_back( std::make_shared<BlockEntryCommand>(ptr, ptr->nbCommands()) );
+                    pCommands.push_back(tempcommands.back());
+                    commands_done += ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
                 }else{
                     std::cout << "block ptr of commands order is nullptr !!" << std::endl;
                 }
@@ -90,10 +135,6 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
                 if (ptr != nullptr){
                     pCommands.push_back(cmd);
                     commands_done++;
-                    if (ptr->getType() == "varset"){
-                        ptr->update();
-                        addVar(ptr->getStringProp("varname"), ptr->getProp("val"));
-                    }
                 }else{
                 }
             }
@@ -114,9 +155,15 @@ int ScriptBlock::nbCommands(){
         auto ptr = loopblock.lock();
         if (ptr != nullptr)return ptr->nbCommands();
     }else{
-        nb = commands.size();
-        for (std::size_t i = 0; i < blocks.size(); i++){
-            nb += blocks[i]->nbCommands();
+        for (std::size_t i = 0; i < commandsorder.size(); i++){
+            try{
+                auto ptr = std::get<std::weak_ptr<ScriptCommand>>(commandsorder[i]);
+                nb++;
+            }catch (std::exception &err){
+                auto ptr = std::get<std::weak_ptr<ScriptBlock>>(commandsorder[i]).lock();
+                if (ptr != nullptr)nb += ptr->nbCommands();
+                else std::cout << "error nbcommands block is nullptr !!" << std::endl;
+            }
         }
     }
     return nb;
@@ -171,24 +218,22 @@ int ScriptBlock::evalParserExpr(const std::string &expr, double &val){
         }
     }
 
-    //if (type == "forblock") std::cout << "varstr : " << varsstr << std::endl;
-
     int code;
     std::shared_ptr<Parser> ptrparser;
-    if (exprevaluated.find(expr) != exprevaluated.end()){
-        ptrparser = exprevaluated[expr];
+    if (exprevaluated.find(expr+varsstr) != exprevaluated.end()){
+        ptrparser = exprevaluated[expr+varsstr];
     }
     else {
         std::cout << "new parser!!" << std::endl;
         ptrparser = std::make_shared<Parser>();
-        exprevaluated.emplace(expr, ptrparser);
+        exprevaluated.emplace(expr+varsstr, ptrparser);
         code = ptrparser->Parse(expr, varsstr);
         if (code >= 0){
             std::cout << "error parsing expr " << expr << std::endl;
             std::cout << "error msg : " << ptrparser->ErrorMsg() << std::endl;
             return 1;
         }
-        ptrparser->Optimize();
+        //ptrparser->Optimize();
     }
 
     val = ptrparser->Eval(tmpvars);
@@ -216,20 +261,28 @@ void ScriptBlock::addBlock(const std::string &block){
     }else{
         blocks.push_back( std::make_shared<ScriptBlock>(block) );
         for (auto it = vars.begin(); it != vars.end(); it++){
-            blocks.back()->parentvars.emplace(it->first, &it->second);
+            if (it->first != "return")blocks.back()->parentvars.emplace(it->first, &it->second);
         }
         if (parentvars.size() != 0){
             for (auto it = parentvars.begin(); it != parentvars.end(); it++){
-                blocks.back()->parentvars.emplace(it->first, it->second);
+                if (it->first != "return")blocks.back()->parentvars.emplace(it->first, it->second);
             }
         }
+
+        for (auto it = functions.begin(); it != functions.end(); it++){
+            blocks.back()->parentfunctions.emplace(it->first, it->second);
+        }
+
+        for (auto it = parentfunctions.begin(); it != parentfunctions.end(); it++){
+            blocks.back()->parentfunctions.emplace(it->first, it->second);
+        }
+
 
         if (block == "loop"){
             loopblock = blocks.back();
             asloopblock = true;
         }
         current_block.current_block = blocks.back();
-        current_block.index = blocks.size()-1;
         current_block.nb_in_wait++;
 
         commandsorder.push_back(blocks.back());
@@ -269,25 +322,33 @@ void ScriptBlock::addBlock(std::shared_ptr<ScriptBlock> block){
     if (ptr != nullptr){
         ptr->addBlock(block);
     }else{
-        blocks.push_back(block);
+        if (block->type == "functionblock")functions.emplace(block->name, block);
+        else blocks.push_back(block);
         for (auto it = vars.begin(); it != vars.end(); it++){
-            blocks.back()->parentvars.emplace(it->first, &it->second);
+            if (it->first != "return")block->parentvars.emplace(it->first, &it->second);
         }
         if (parentvars.size() != 0){
             for (auto it = parentvars.begin(); it != parentvars.end(); it++){
-                blocks.back()->parentvars.emplace(it->first, it->second);
+                if (it->first != "return")block->parentvars.emplace(it->first, it->second);
             }
+        }
+
+        for (auto it = functions.begin(); it != functions.end(); it++){
+            block->parentfunctions.emplace(it->first, it->second);
+        }
+
+        for (auto it = parentfunctions.begin(); it != parentfunctions.end(); it++){
+            block->parentfunctions.emplace(it->first, it->second);
         }
 
         if (block->getType() == "loop"){
             loopblock = blocks.back();
             asloopblock = true;
         }
-        current_block.current_block = blocks.back();
-        current_block.index = blocks.size()-1;
+        current_block.current_block = block;
         current_block.nb_in_wait++;
 
-        commandsorder.push_back(blocks.back());
+        commandsorder.push_back(block);
     }
 }
 
@@ -299,7 +360,6 @@ void ScriptBlock::addBlockEnd(){
         current_block.current_block = std::shared_ptr<ScriptBlock>();
         for (int i = blocks.size()-1; i >= 0; i--){
             if (!blocks[i]->isEnded()){
-                current_block.index = i;
                 current_block.current_block = blocks[i];
                 break;
             }
@@ -352,9 +412,21 @@ bool ScriptBlock::isCondChainEntered(){
 
 std::weak_ptr<ScriptBlock> ScriptBlock::getLastEndedBlock(){
     auto ptr = current_block.current_block.lock();
-    std::cout << "sfkdsjfkl type " << type  << std::endl;
     if (ptr != nullptr){
         return ptr->getLastEndedBlock();
     }
     return blocks.back();
+}
+
+bool ScriptBlock::functionExist(const std::string &name){
+    auto ptrblock = current_block.current_block.lock();
+    if (ptrblock != nullptr)return ptrblock->functionExist(name);
+    return (functions.find(name)!=functions.end()) || (parentfunctions.find(name)!=parentfunctions.end());
+}
+
+std::weak_ptr<ScriptBlock> ScriptBlock::getFunction(const std::string &name){
+    auto ptrblock = current_block.current_block.lock();
+    if (ptrblock != nullptr)return ptrblock->getFunction(name);
+    if (parentfunctions.find(name) != parentfunctions.end())return parentfunctions.at(name);
+    if (functions.find(name) != functions.end())return functions.at(name);
 }

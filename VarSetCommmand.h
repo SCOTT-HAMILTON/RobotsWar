@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "ScriptCommand.h"
+
 #include "ScriptBlock.h"
 
 class VarSetCommmand : public ScriptCommand

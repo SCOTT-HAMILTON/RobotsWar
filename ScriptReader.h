@@ -18,6 +18,7 @@
 #include "WhileBlock.h"
 #include "ForBlock.h"
 #include "PrintCommand.h"
+#include "FunctionBlock.h"
 
 class ScriptReader
 {
@@ -28,6 +29,7 @@ public:
     int nbCommands();
     double getVar(const std::string &var);
     void setVar(const std::string &var, double val);
+    void addBlockCallFunc(const std::string &funcname, const std::vector<std::string> &exprs);
 
     void displayMainBlockVars();
 

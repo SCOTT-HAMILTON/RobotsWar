@@ -23,7 +23,9 @@ void PrintCommand::update(){
                 double val = 0;
                 if (ptr->varExist(elems[i].str)){
                     val = ptr->getVar(elems[i].str);
-                }else ptr->evalParserExpr(elems[i].str, val);
+                }else{
+                    ptr->evalParserExpr(elems[i].str, val);
+                }
                 str += std::to_string(val);
             }
         }

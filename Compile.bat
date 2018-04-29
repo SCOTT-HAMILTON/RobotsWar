@@ -14,12 +14,12 @@ set /P FPARSERdir=""
 set lib_dynamic=-lsfml-graphics -lsfml-window -lsfml-audio -lsfml-network -lsfml-system -lfparser
 
 set param_compile=-I%CD% -I %SFMLdir%\include -I%FPARSERdir%\include -std=c++17
-set param_link=-L%SFMLdir%\lib -L%CD%\deps %lib_dynamic% -L%FPARSERdir%\lib -o shooter.exe -std=c++17 -lstdc++fs
+set param_link=-L%SFMLdir%\lib -L%CD%\deps %lib_dynamic% -L%FPARSERdir%\lib -std=c++17 -lstdc++fs
 
 echo g++ -c *.cpp %param_compile% 
 g++ -c *.cpp %param_compile% 
 
-echo g++ *.o %param_link% -o Rush.exe
+echo g++ *.o %param_link% -o bin\RobotsWar.exe
 g++ *.o %param_link% -o bin\RobotsWar.exe
 
 del *.o

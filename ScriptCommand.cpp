@@ -22,3 +22,7 @@ double ScriptCommand::getProp(const std::string &name){
 const std::string &ScriptCommand::getStringProp(const std::string &name){
     return strings[name];
 }
+
+void ScriptCommand::setBlock(std::weak_ptr<ScriptBlock> block){
+    myblock = block;
+}

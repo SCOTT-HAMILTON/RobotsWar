@@ -75,6 +75,7 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             std::string type = command->getType();
+            //std::cout << "type : " << type << std::endl;
             if (type == "move"){
                 command->update();
                 sf::Vector2f pos = robots[i].getPos();
@@ -88,6 +89,14 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
             }else if (type == "print"){
                 command->update();
                 std::cout << robots[i].getName() << " >> " << command->getStringProp("str") << std::endl;
+            }else if (type == "varset"){
+                command->update();
+                //robots[i].setScriptVar(command->getStringProp("varname"), command->getProp("val"));
+            }else if (type == "blockentry"){
+                command->update();
+                if (!command->getProp("canenter")){
+                    c += command->getProp("nbcmd");
+                }
             }
         }
     }
