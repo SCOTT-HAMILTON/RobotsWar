@@ -13,7 +13,8 @@ ScriptBlock::ScriptBlock(const std::string &type, bool ended) :
     current_block.nb_in_wait = 0;
     debug_times = 0;
 
-    addVar("return", 0);
+    if (type.rfind("call", 0) != 0)addVar("return", 0);
+    else std::cout << "function call no personal return !!" << std::endl;
 }
 
 ScriptBlock::~ScriptBlock()
@@ -33,6 +34,13 @@ double *ScriptBlock::getVarPtr(const std::string &name){
     std::cout << "               ASKING FOR VAR PTR " << name << " block " << type << std::endl;
     auto ptrblock = current_block.current_block.lock();
     if (ptrblock != nullptr)return ptrblock->getVarPtr(name);
+    if (parentvars.find(name) != parentvars.end())return parentvars.at(name);
+    if (vars.find(name) != vars.end())return &vars.at(name);
+
+    return nullptr;
+}
+
+double *ScriptBlock::getPersonalVarPtr(const std::string &name){
     if (parentvars.find(name) != parentvars.end())return parentvars.at(name);
     if (vars.find(name) != vars.end())return &vars.at(name);
 
@@ -71,13 +79,10 @@ void ScriptBlock::addVar(const std::string &name, double var){
 
         if (vars.find(name) != vars.end()){
             vars[name] = var;
-            //std::cout << "changing var " << name << " to " << var << " block " << type << std::endl;
         }else if (parentvars.find(name) != parentvars.end()){
             *parentvars[name] = var;
-            //std::cout << "changing parentvar " << name << " to " << var << " block " << type << std::endl;
         }else{
             vars.emplace(name, var);
-            std::cout << " BLOCK " << type << " ADDING VAR " << name << " TO VARS !!!!!!" << std::endl;
         }
     }
 }
@@ -115,7 +120,6 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
     }else {
         if (index_lastcmd>=commandsorder.size())index_lastcmd = 0;
         bool last_ended_properly = true;
-        //if (type == "ifblock") std::cout << "if block nbcommands : " << nbCommands << ", nbcommandsorder : " << commandsorder.size() << std::endl;
         for (std::size_t i = index_lastcmd; i < commandsorder.size() && commands_done<nbCommands; i++){
             last_ended_properly = true;
             try{
@@ -124,7 +128,10 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
                 if (ptr != nullptr){
                     tempcommands.push_back( std::make_shared<BlockEntryCommand>(ptr, ptr->nbCommands()) );
                     pCommands.push_back(tempcommands.back());
+                    std::size_t before = pCommands.size();
                     commands_done += ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
+                    std::string typeblock = ptr->getType();
+                    tempcommands.back()->setProp("nbcmd", pCommands.size()-before);
                 }else{
                     std::cout << "block ptr of commands order is nullptr !!" << std::endl;
                 }

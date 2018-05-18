@@ -25,27 +25,41 @@ void testparser(const std::string &expr){
 int main()
 {
     testparser("x*x");
-
     Map mymap(18, 18);
     Renderer renderer;
     renderer.setScale(sf::Vector2f(2, 2));
-    RobotLoader robotloader;
     FunctorRandomPos posRandomizer(&mymap);
-    robotloader.setRobotPoses(posRandomizer);
-
+    RobotLoader robotloader(mymap, posRandomizer);
     sf::RenderWindow fenetre(sf::VideoMode(mymap.getNbTilesWidth()*TILE_SIZE*renderer.getScale().x, mymap.getNbTilesHeight()*TILE_SIZE*renderer.getScale().y), "RobotsWar !!!");
-    fenetre.setFramerateLimit(144);
+    fenetre.setFramerateLimit(600);
+
+    sf::Font font;font.loadFromFile("res/absender1.ttf");
+    sf::Text frameratestext("0 FPS", font, 20);
+    frameratestext.setPosition(10, 10);
+    frameratestext.setFillColor(sf::Color::Black);
 
     sf::Clock c;
+    sf::Clock fpsupdate;
     float dt;
+    sf::Clock timer;
+
+    unsigned long framecounter = 0;
+
 
     sf::RectangleShape black_square(sf::Vector2f(16*renderer.getScale().x, 16*renderer.getScale().y));
     black_square.setFillColor(sf::Color(0, 0, 0));
 
     while (fenetre.isOpen())
     {
-        dt = c.restart().asMicroseconds()*0.000001f;
+        framecounter++;
+        double clockt = c.restart().asMicroseconds();
+        dt = clockt*0.000001f;
 
+        if (fpsupdate.getElapsedTime().asMilliseconds()>500){
+            fpsupdate.restart();
+            frameratestext.setString(std::to_string( framecounter*2 )+" FPS");
+            framecounter = 0;
+        }
         sf::Event event;
         while (fenetre.pollEvent(event))
         {
@@ -65,6 +79,7 @@ int main()
         //RENDERER RENDER
         fenetre.clear(sf::Color::White);
         renderer.render(fenetre);
+        fenetre.draw(frameratestext);
         fenetre.display();
     }
 

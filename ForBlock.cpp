@@ -9,7 +9,6 @@ ForBlock::ForBlock(const std::string &var, const std::string &boolexpr, const st
     if (varExist(startexpr)){
         val = getVar(startexpr);
     }else evalParserExpr(startexpr, val);
-    std::cout << "varname, val : " << varname << ", val : " << val << std::endl;
     addVar(varname, val);
 }
 

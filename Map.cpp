@@ -13,7 +13,6 @@ Map::Map(int nb_tiles_width, int nb_tiles_height) :
 
     chunk_width = static_cast<int>( (nb_tiles_width-nb_tiles_width%2) /2);
     chunk_height = static_cast<int>((nb_tiles_height-nb_tiles_height%2)/2);
-
     for (std::size_t i = 0; i < 2; i++){
         chunks.push_back(std::vector<MapChunk>());
         for (std::size_t j = 0; j < 2; j++){
@@ -23,17 +22,18 @@ Map::Map(int nb_tiles_width, int nb_tiles_height) :
         }
 
     }
-
-    std::cout << "chunk sizes : " << chunk_width << ", " << chunk_height << std::endl;
-
     for (std::size_t i = 0; i < nb_h; i++){
+        idmap.push_back(std::vector<int>());
         for (std::size_t j = 0; j < nb_w; j++){
             int id = rand()%2;
             int tmp_x = j/chunk_width;
             int tmp_y = i/chunk_height;
             chunks[tmp_y][tmp_x].setBlock(j, i, id);
+            idmap.back().push_back(id);
         }
     }
+        std::cout << "ma p lol 3!!" << std::endl;
+
 }
 
 Map::~Map()
@@ -76,13 +76,16 @@ bool Map::collide(const sf::Vector2f &pos){
     return chunks[tmp_x][tmp_y].collide(pos, TILE_SIZE);
 }
 
-bool Map::collide(const sf::FloatRect &rect){
+sf::Vector2f Map::collide(const sf::FloatRect &rect, const sf::Vector2f &vel){
+    float min_swept = 1.0f;
     for (std::size_t i = 0; i < chunks.size(); i++){
         for (std::size_t j = 0; j < chunks[i].size(); j++){
-            if (chunks[i][j].collide(rect, TILE_SIZE))return true;
+            float swept = chunks[i][j].sweptCollide(rect, TILE_SIZE, vel);
+            if (swept<min_swept)min_swept = swept;
         }
     }
-    return false;
+    if (min_swept<0)min_swept = 0;
+    return sf::Vector2f( rect.left+vel.x*min_swept, rect.top+vel.y*min_swept );
 }
 
 int Map::getNbTilesWidth() const{
@@ -92,4 +95,9 @@ int Map::getNbTilesWidth() const{
 int Map::getNbTilesHeight() const{
     return nb_h;
 
+}
+
+int Map::getTile(int x, int y) const{
+    if (x<0 || y<0 || x>=nb_w || y>=nb_h)return -1;
+    return idmap[y][x];
 }

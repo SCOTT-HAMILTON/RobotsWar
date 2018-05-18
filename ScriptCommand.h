@@ -20,6 +20,7 @@ public:
     double getProp(const std::string &name);
     const std::string &getStringProp(const std::string &name);
     virtual void update(){}
+    void setProp(const std::string &name, double val);
     void setBlock(std::weak_ptr<ScriptBlock> block);
 
 protected:

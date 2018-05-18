@@ -1,9 +1,13 @@
 #include "Robot.h"
 
-Robot::Robot(const std::string &author, int nb_frames, const std::string &dir) :
-    path(dir), reader(path+"/script.txt")
+Robot::Robot(const std::string &author, int nb_frames, const std::string &dir, const sf::Vector2f &pos, const Map &worldmap) :
+    path(dir)
 {
-    std::cout << "lol " << std::endl;
+    this->pos = pos;
+
+    reader.initVars(pos, worldmap);
+    reader.load(path+"/script.txt");
+
     std::size_t index = path.find_last_of("/\\")+1;
     if (index == path.npos)name = "defaultname";
     else name = path.substr(index , path.size());
@@ -81,4 +85,8 @@ void Robot::displayScriptVars(){
 
 const std::string &Robot::getName(){
     return name;
+}
+
+void Robot::initScriptVars(const Map &worldmap){
+    reader.initVars(pos, worldmap);
 }

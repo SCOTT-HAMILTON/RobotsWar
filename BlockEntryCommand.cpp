@@ -3,6 +3,7 @@
 BlockEntryCommand::BlockEntryCommand(std::weak_ptr<ScriptBlock> block, std::size_t nb_cmds) :
     ScriptCommand(block, "blockentry")
 {
+    type += "_"+block.lock()->getType();
     props["nbcmd"] = nb_cmds;
     props["canenter"] = 0;
 }

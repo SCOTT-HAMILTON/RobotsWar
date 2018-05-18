@@ -19,15 +19,17 @@ public:
     void dropToRenderer(Renderer &renderer);
     sf::Vector2f getRandomFreeCase();
     bool collide(const sf::Vector2f &pos);
-    bool collide(const sf::FloatRect &rect);
+    sf::Vector2f collide(const sf::FloatRect &rect, const sf::Vector2f &vel);
     int getNbTilesWidth() const;
     int getNbTilesHeight() const;
+    int getTile(int x, int y) const;
 
 private:
     int nb_w;
     int nb_h;
     Tileset tileset;
     std::vector<std::vector<MapChunk>> chunks;
+    std::vector<std::vector<int>> idmap;
     int chunk_width;
     int chunk_height;
 

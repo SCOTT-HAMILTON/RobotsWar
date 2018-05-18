@@ -26,3 +26,7 @@ const std::string &ScriptCommand::getStringProp(const std::string &name){
 void ScriptCommand::setBlock(std::weak_ptr<ScriptBlock> block){
     myblock = block;
 }
+
+void ScriptCommand::setProp(const std::string &name, double val){
+    props[name] = val;
+}

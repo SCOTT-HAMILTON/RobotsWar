@@ -22,8 +22,7 @@ public:
     void dropToRenderer(Renderer &renderer, const Tileset &tileset, int tile_size);
     void getFreeBlocks(std::vector<sf::Vector2f> &poses, int tile_size) const;
     bool collide(const sf::Vector2f &pos, int tile_size);
-    bool collide(const sf::FloatRect &_rect, int tile_size);
-
+    float sweptCollide(const sf::FloatRect &collider, int tile_size, const sf::Vector2f &vel);
 
 private:
     sf::FloatRect rect;
@@ -36,6 +35,8 @@ private:
     idtype myid;
 
     static idtype cur_id;
+
+    float sweptAABB(const sf::FloatRect &collider, const sf::FloatRect &block, const sf::Vector2f &velcollider);
 };
 
 #endif // MAPCHUNK_H

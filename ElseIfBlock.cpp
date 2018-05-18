@@ -16,6 +16,7 @@ bool ElseIfBlock::canEnter(){
     if (ptr == nullptr){
         stat = false;
         std::cout << "      ERROR block elseif, block pointed is nullptr !!" << std::endl;
+        condchain_entered = false;
         return stat;
     }
     //std::cout << "block type : " << ptr->getStat() << std::endl;

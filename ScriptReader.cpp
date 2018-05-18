@@ -26,14 +26,8 @@ std::vector<std::string> split(const std::string &text, char sep) {
     return tokens;
 }
 
-ScriptReader::ScriptReader(const std::string &path_script)
-{
-    mainblock = std::make_shared<ScriptBlock>("mainblock");
-
+void ScriptReader::load(const std::string &path_script){
     std::ifstream file_script;
-
-    mainblock->setEnded();
-
     file_script.open(path_script);
     std::cout << "file : " << path_script << std::endl;
     if (file_script.good()){
@@ -67,7 +61,6 @@ ScriptReader::ScriptReader(const std::string &path_script)
                 std::string strvars = line.substr(index_first+1, index_last-index_first-1);
                 std::cout << "strvars : " << strvars << std::endl;
                 vars = split(strvars, ',');
-                std::cout << "first vars : " << vars[0] << std::endl;
 
                 auto block = std::make_shared<FunctionBlock>(name, vars);
                 mainblock->addBlock(block);
@@ -90,6 +83,7 @@ ScriptReader::ScriptReader(const std::string &path_script)
                 offsetx.doubleval = x;offsety.doubleval = y;
                 offsetx.expr = params[0];offsety.expr = params[1];
                 offsetx.type = CONSTANT;offsety.type = CONSTANT;
+
                 if (std::isnan(x) || success_x == str_x){
                     offsetx.type = VAR;
                 }//else std::cout << "const type x : "<<line<< std::endl;
@@ -157,7 +151,6 @@ ScriptReader::ScriptReader(const std::string &path_script)
                         str += line[i];
                         onexpr = true;
                     }
-                    std::cout << "str : " << str << ", " << line[i] << std::endl;
                 }
 
                 if (error){
@@ -209,9 +202,9 @@ ScriptReader::ScriptReader(const std::string &path_script)
                 std::string startexpr = tab[1];
                 replace_all(condition_expr, "and", "&");
                 replace_all(condition_expr, "or", "&");
+                replace_all(condition_expr, "==", "=");
                 auto block = std::make_shared<ForBlock>(varname, condition_expr, startexpr, incremeteexpr);
                 mainblock->addBlock(block);
-                std::cout << "condition : " << condition_expr << ", varname : " << varname << ", startexpr " << startexpr << ", incremente expr ! " << incremeteexpr << std::endl;
             }else if (line.rfind("while", 0) == 0){
                 entered = true;
                 line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
@@ -219,6 +212,7 @@ ScriptReader::ScriptReader(const std::string &path_script)
                 std::string condition_expr = line.substr(6, line.size()-7);
                 replace_all(condition_expr, "and", "&");
                 replace_all(condition_expr, "or", "&");
+                replace_all(condition_expr, "==", "=");
                 auto block = std::make_shared<WhileBlock>(condition_expr);
                 mainblock->addBlock(block);
                 std::cout << "condition : " << condition_expr << std::endl;
@@ -229,6 +223,7 @@ ScriptReader::ScriptReader(const std::string &path_script)
                 std::string condition_expr = line.substr(3, line.size()-4);
                 replace_all(condition_expr, "and", "&");
                 replace_all(condition_expr, "or", "&");
+                replace_all(condition_expr, "==", "=");
                 auto block = std::make_shared<IfBlock>(condition_expr);
                 mainblock->addBlock(block);
                 std::cout << "condition : " << condition_expr << std::endl;
@@ -240,6 +235,7 @@ ScriptReader::ScriptReader(const std::string &path_script)
                 std::string condition_expr = line.substr(7, line.size()-8);
                 replace_all(condition_expr, "and", "&");
                 replace_all(condition_expr, "or", "&");
+                replace_all(condition_expr, "==", "=");
                 auto block = std::make_shared<ElseIfBlock>(condition_expr, mainblock->getLastEndedBlock());
                 mainblock->addBlock(block);
                 std::cout << "condition : " << condition_expr << std::endl;
@@ -333,9 +329,8 @@ ScriptReader::ScriptReader(const std::string &path_script)
                         ptrblock = mainblock;
                     }
                     double *val = ptrblock->getVarPtr(tab[0]);
-                    std::cout << "adding parent var " << tab[0] << " of val " << *val << " and of block " << ptrblock->getType() << " to func block " << blockfuncptr->getType() << std::endl;
                     blockfuncptr->addParentVar(tab[0], val);
-                    commandptr = std::make_shared<VarSetCommmand>(blockfuncptr, "return", tab[0]);
+                    commandptr = std::make_shared<VarSetCommmand>(ptrblock, "return", tab[0]);
                     commands.push_back(commandptr);
                     mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
                     entered = true;
@@ -355,7 +350,6 @@ ScriptReader::ScriptReader(const std::string &path_script)
                     std::string strvars = tab[1].substr(index+1, index_last-index-1);
                     std::cout << "strvars : " << strvars << std::endl;
                     std::vector<std::string> vars = split(strvars, ',');
-                    std::cout << "first vars : " << vars[0] << std::endl;
                     if (mainblock->functionExist(funcname)){
                         addBlockCallFunc(funcname, vars);
                     }
@@ -367,13 +361,7 @@ ScriptReader::ScriptReader(const std::string &path_script)
                     }
                     double *val = ptrblock.lock()->getVarPtr(tab[0]);
                     blockfuncptr.lock()->addParentVar(tab[0], val);
-                    if (blockfuncptr.lock() != nullptr){
-                        std::cout << "setting " << tab[0] << " to return of block " << blockfuncptr.lock()->getType() << std::endl;
-                        commandptr = std::make_shared<VarSetCommmand>(blockfuncptr, "return", tab[0]);
-                    }else{
-                        commandptr = std::make_shared<VarSetCommmand>(mainblock, "return", tab[0]);
-                    }
-
+                    commandptr = std::make_shared<VarSetCommmand>(ptrblock, "return", tab[0]);
                     commands.push_back(commandptr);
                     mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
                 }
@@ -423,6 +411,14 @@ ScriptReader::ScriptReader(const std::string &path_script)
     std::cout << std::endl;
 }
 
+ScriptReader::ScriptReader()
+{
+    mainblock = std::make_shared<ScriptBlock>("mainblock");
+    mainblock->setEnded();
+
+
+}
+
 ScriptReader::~ScriptReader()
 {
     //dtor
@@ -452,6 +448,9 @@ void ScriptReader::displayMainBlockVars(){
 
 void ScriptReader::addBlockCallFunc(const std::string &funcname, const std::vector<std::string> &exprs){
     if (mainblock->functionExist(funcname)){
+        auto ptrblockcontainer = mainblock->getCurBlock().lock();
+        if (ptrblockcontainer == nullptr)ptrblockcontainer = mainblock;
+        std::cout << "ptr block container : " << ptrblockcontainer->getType() << std::endl;
         mainblock->addBlock("call"+funcname+"func");
         auto funcblockptr = mainblock->getCurBlock().lock();
         if (funcblockptr != nullptr){
@@ -469,6 +468,8 @@ void ScriptReader::addBlockCallFunc(const std::string &funcname, const std::vect
                     commands.back()->setBlock(funcblockptr);
                     index++;
                 }
+                double *val = ptrblockcontainer->getPersonalVarPtr("return");
+                funcblockptr->addParentVar("return" , val);
 
                 std::vector<std::weak_ptr<ScriptCommand>> cmds;
                 bool tmpbool;
@@ -485,4 +486,20 @@ void ScriptReader::addBlockCallFunc(const std::string &funcname, const std::vect
     }else{
         std::cout << "error script reader addblockcallfunc, funcname doesn't exist: " << funcname << std::endl;
     }
+}
+
+void ScriptReader::initVars(const sf::Vector2f &pos, const Map &worldmap){
+    mainblock->addVar("posx", pos.x);mainblock->addVar("posy", pos.y);
+    int tmpx = pos.x+(TILE_SIZE/2) - (static_cast<int>(pos.x)%TILE_SIZE);tmpx/=TILE_SIZE;
+    int tmpy = pos.y+(TILE_SIZE/2) - (static_cast<int>(pos.y)%TILE_SIZE);tmpy/=TILE_SIZE;
+    mainblock->addVar("mapx", tmpx);mainblock->addVar("mapy", tmpy);
+
+    mainblock->addVar("blockupright", worldmap.getTile(tmpx+1, tmpy-1));
+    mainblock->addVar("blockright", worldmap.getTile(tmpx+1, tmpy));
+    mainblock->addVar("blockdownright", worldmap.getTile(tmpx+1, tmpy+1));
+    mainblock->addVar("blockdown", worldmap.getTile(tmpx, tmpy+1));
+    mainblock->addVar("blockdownleft", worldmap.getTile(tmpx-1, tmpy+1));
+    mainblock->addVar("blockleft", worldmap.getTile(tmpx-1, tmpy));
+    mainblock->addVar("blockupleft", worldmap.getTile(tmpx-1, tmpy-1));
+    mainblock->addVar("blockup", worldmap.getTile(tmpx, tmpy-1));
 }

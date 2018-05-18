@@ -19,19 +19,22 @@
 #include "ForBlock.h"
 #include "PrintCommand.h"
 #include "FunctionBlock.h"
+#include "Map.h"
 
 class ScriptReader
 {
 public:
-    ScriptReader(const std::string &path_script);
+    ScriptReader();
     virtual ~ScriptReader();
     void getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands);
     int nbCommands();
     double getVar(const std::string &var);
     void setVar(const std::string &var, double val);
     void addBlockCallFunc(const std::string &funcname, const std::vector<std::string> &exprs);
+    void load(const std::string &path_script);
 
     void displayMainBlockVars();
+    void initVars(const sf::Vector2f &pos, const Map &worldmap);
 
 private:
     std::shared_ptr<ScriptBlock> mainblock;

@@ -28,6 +28,7 @@ public:
     const std::string &getType();
     double getVar(const std::string &name);
     double *getVarPtr(const std::string &name);
+    double *getPersonalVarPtr(const std::string &name);
     std::string getVarName(std::size_t index);
     const std::string &getString(const std::string &name);
     virtual std::size_t getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands, bool &commandsended);

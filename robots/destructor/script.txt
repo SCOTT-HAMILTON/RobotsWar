@@ -1,24 +1,42 @@
-double i= 0
-double off = 1
-double speed=5
+double speedx = 100
+double speedy = 100
+double offx = speedx
+double offy = 0
+double change_dir = 1
 
 loop:
-	i = i+off
+	double prec_x = posx
+	double prec_y = posy
 	
-	move(speed, speed);
-	if (i>10):
-		speed = -speed
-		off = -off
-	else if (i<-10):
-		speed = -speed
-		off = -off
+	if (offx < 0 and blockleft == -1):
+		offx = speedx
+	else if (offy < 0 and blockup == -1):
+		offy = speedy
+	else if (offx > 0 and blockright == -1):
+		offx = -speedx
+	else if (offy > 0 and blockdown == -1):
+		offy = -speedy
 	end
-
 	
-	for (tmp = 0, tmp<10, 1):
+	move(offx, offy);
 		
+	if ( prec_x == posx and prec_y == posy ):
+		if (blockright == 0):
+			print("go right !!")
+			offx = speedx
+			offy = 0
+		else if (blockdown == 0):
+			print("go down !!")
+			offx = 0
+			offy = speedy
+		else if (blockup == 0):
+			print("go up !!")
+			offx = 0
+			offy = -speedy
+		else if (blockleft == 0):
+			print("go left !!")
+			offx = -speedx
+			offy = 0
+		end 
 	end
-
-	print  (  " i: " + i )  ;
-
 end

@@ -2,57 +2,23 @@
 #include <cstdlib>
 #include <cmath>
 
-namespace fs =  std::experimental::filesystem::v1;
-
-std::vector<std::string> get_directories(const std::string& s)
-{
-    std::vector<std::string> r;
-    for(auto& p : fs::recursive_directory_iterator(s))
-        if(p.status().type() == fs::file_type::directory)
-            r.push_back(p.path().string());
-    return r;
-}
-
-RobotLoader::RobotLoader()
-{
-    std::string file_path;
-    std::vector<std::string> dirs = get_directories("robots");
-    for (std::size_t i = 0; i < dirs.size(); i++){
-        std::ifstream file_opt(dirs[i]+"/prop.txt");
-        if (!file_opt.good())continue;
-        bool continuer = true;
-        char buffer[1000];
-        std::string author;
-        int nb_frames;
-        while (continuer && !file_opt.eof()){
-            file_opt.getline(buffer, sizeof(buffer));
-            std::string line(buffer);
-            std::cout << line << std::endl;
-            if (line.rfind("author:", 0) == 0) {
-                author = line.substr(7, line.size()-7);
-                std::cout << "author : " << author << std::endl;
-            }else if (line.rfind("nb_frames:", 0) == 0) {
-                std::string tmpstr = line.substr(10, line.size()-7);
-                try {
-                    nb_frames = std::stoi(tmpstr);
-                }catch (std::exception &e){
-                    std::cout << "error converting string " << tmpstr << " to int : " << e.what() << std::endl;;
-                }
-                std::cout << "nb_frames : " << nb_frames << std::endl;
-            }
-        }
-        if (std::isnan(nb_frames))continue;
-
-        robots.emplace_back(author, nb_frames, dirs[i]);
-
-        std::cout << std::endl;
-
-    }
-}
-
 RobotLoader::~RobotLoader()
 {
     //dtor
+}
+
+namespace fs =  std::experimental::filesystem::v1;
+
+std::vector<std::string> RobotLoader::get_directories(const std::string& s)
+{
+    std::vector<std::string> r;
+    for(auto& p : fs::recursive_directory_iterator(s)){
+        if(p.status().type() == fs::file_type::directory){
+            r.push_back(p.path().string());
+        }
+    }
+
+    return r;
 }
 
 void RobotLoader::dropRobotsToRenderer(Renderer &renderer){
@@ -71,28 +37,32 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
     std::vector<std::weak_ptr<ScriptCommand>> commands;
     for (std::size_t i = 0; i < robots.size(); i++){
         commands.clear();
+        robots[i].initScriptVars(arenamap);
         robots[i].getScriptCommands(5, commands);
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             std::string type = command->getType();
-            //std::cout << "type : " << type << std::endl;
             if (type == "move"){
                 command->update();
                 sf::Vector2f pos = robots[i].getPos();
-                double offsetx = command->getProp("offsetx");
-                double offsety = command->getProp("offsety");
-                pos.x += offsetx;
-                pos.y += offsety;
 
-                sf::FloatRect colliderect(pos.x, pos.y, TILE_SIZE, TILE_SIZE);
-                if (!arenamap.collide(colliderect))robots[i].setPos(pos);
+                sf::Vector2f off;
+                off.x = command->getProp("offsetx")*dt;
+                off.y = command->getProp("offsety")*dt;
+
+                sf::FloatRect rectrobot(pos.x, pos.y, TILE_SIZE, TILE_SIZE);
+                sf::Vector2f newpos = arenamap.collide(rectrobot, off);
+
+                robots[i].setPos(newpos);
+
+                robots[i].setScriptVar("posx", robots[i].getPos().x);robots[i].setScriptVar("posy", robots[i].getPos().y);
             }else if (type == "print"){
                 command->update();
                 std::cout << robots[i].getName() << " >> " << command->getStringProp("str") << std::endl;
             }else if (type == "varset"){
                 command->update();
                 //robots[i].setScriptVar(command->getStringProp("varname"), command->getProp("val"));
-            }else if (type == "blockentry"){
+            }else if (type.rfind("blockentry", 0) == 0){
                 command->update();
                 if (!command->getProp("canenter")){
                     c += command->getProp("nbcmd");
