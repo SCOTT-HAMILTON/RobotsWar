@@ -12,6 +12,8 @@ using idtype = unsigned long long int;
 
 enum ChunkType{BLOCKSCHUNK, CHUNKSCHUNK};
 
+enum CollideZone{LEFT_SIDE, RIGHT_SIDE, TOP_SIDE, DOWN_SIDE};
+
 class MapChunk
 {
 public:
@@ -22,7 +24,7 @@ public:
     void dropToRenderer(Renderer &renderer, const Tileset &tileset, int tile_size);
     void getFreeBlocks(std::vector<sf::Vector2f> &poses, int tile_size) const;
     bool collide(const sf::Vector2f &pos, int tile_size);
-    float sweptCollide(const sf::FloatRect &collider, int tile_size, const sf::Vector2f &vel);
+    float sweptCollide(const sf::FloatRect &collider, int tile_size, const sf::Vector2f &vel) const;
 
 private:
     sf::FloatRect rect;
@@ -36,7 +38,8 @@ private:
 
     static idtype cur_id;
 
-    float sweptAABB(const sf::FloatRect &collider, const sf::FloatRect &block, const sf::Vector2f &velcollider);
+    static float sweptAABB1(const sf::FloatRect &collider, const sf::FloatRect &block, const sf::Vector2f &velcollider, CollideZone *zone = nullptr);
+    static float sweptAABB2(const sf::FloatRect &collider, const sf::FloatRect &block, const sf::Vector2f &velcollider, CollideZone *zone = nullptr);
 };
 
 #endif // MAPCHUNK_H

@@ -24,6 +24,8 @@ void testparser(const std::string &expr){
 
 int main()
 {
+    Robot::initTexts();
+
     testparser("x*x");
     Map mymap(18, 18);
     Renderer renderer;
@@ -31,7 +33,7 @@ int main()
     FunctorRandomPos posRandomizer(&mymap);
     RobotLoader robotloader(mymap, posRandomizer);
     sf::RenderWindow fenetre(sf::VideoMode(mymap.getNbTilesWidth()*TILE_SIZE*renderer.getScale().x, mymap.getNbTilesHeight()*TILE_SIZE*renderer.getScale().y), "RobotsWar !!!");
-    fenetre.setFramerateLimit(600);
+    fenetre.setFramerateLimit(60);
 
     sf::Font font;font.loadFromFile("res/absender1.ttf");
     sf::Text frameratestext("0 FPS", font, 20);
@@ -42,6 +44,7 @@ int main()
     sf::Clock fpsupdate;
     float dt;
     sf::Clock timer;
+    bool pause = false;
 
     unsigned long framecounter = 0;
 
@@ -65,9 +68,12 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 fenetre.close();
+            else if (event.type == sf::Event::KeyPressed){
+                if (event.key.code == sf::Keyboard::P)pause = !pause;
+            }
         }
 
-        robotloader.updateScripts(dt, mymap);
+        if (!pause)robotloader.updateScripts(dt, mymap);
         sf::Vector2f pos = robotloader.getRobot(0).getPos();
         black_square.setPosition(pos.x*renderer.getScale().x, pos.y*renderer.getScale().y);
 

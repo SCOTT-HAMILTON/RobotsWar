@@ -11,6 +11,14 @@ class ScriptBlock;
 
 #include "ScriptBlock.h"
 
+enum TYPE{VAR, CONSTANT};
+
+struct ParamVar{
+    TYPE type;
+    std::string expr;
+    double doubleval;
+};
+
 class ScriptCommand
 {
 public:
@@ -22,6 +30,7 @@ public:
     virtual void update(){}
     void setProp(const std::string &name, double val);
     void setBlock(std::weak_ptr<ScriptBlock> block);
+    const std::weak_ptr<ScriptBlock> &getBlock();
 
 protected:
     std::weak_ptr<ScriptBlock> myblock;

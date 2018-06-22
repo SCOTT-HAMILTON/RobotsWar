@@ -2,6 +2,9 @@
 #include <cstdlib>
 #include <cmath>
 
+const sf::Clock ScriptReader::UniversalRobotsTime = sf::Clock();
+
+
 void replace_all( std::string &s, const std::string &tosearch, const std::string &toreplace ) {
     for( size_t pos = 0; ; pos += toreplace.length() ) {
         pos = s.find( tosearch, pos );
@@ -34,17 +37,27 @@ void ScriptReader::load(const std::string &path_script){
         bool continuer = true;
         char buffer[1000];
         std::cout << "file good" << std::endl;
+        bool dontreadline = false;
+        std::string touseline("");
+        std::shared_ptr<ScriptCommand> toaddcommand;
+        int linetoaddcommand = 0;
+        unsigned long nbline = 0;
         while (continuer && !file_script.eof()){
-            file_script.getline(buffer, sizeof(buffer));
-            std::string line(buffer);
+            std::string line;
+            nbline++;
+            if (!dontreadline){
+                file_script.getline(buffer, sizeof(buffer));
+                line = std::string(buffer);
+            }else line = touseline;
             line.erase(remove_if(line.begin(), line.end(), [](char c){return c == '\t' || c == ';';} ), line.end());
-            std::cout << "LINE : " << line << std::endl;
+            std::cout << nbline << " LINE : " << line << std::endl;
             std::shared_ptr<ScriptCommand> ptr;
             bool entered = false;
+            dontreadline = false;
 
             /* SYNTAXE TEST */
 
-            if (line == "end"){
+            if (line.rfind("end", 0) == 0){
                 entered = true;
                 mainblock->addBlockEnd();
             }else if (line.rfind("//", 0) == 0){
@@ -75,7 +88,7 @@ void ScriptReader::load(const std::string &path_script){
                     continuer = false;
                     break;
                 }
-                offset offsetx, offsety;
+                ParamVar offsetx, offsety;
                 char *success_x, *success_y;
                 char *str_x = (char*)params[0].c_str(), *str_y = (char*)params[1].c_str();
                 double x = std::strtof(str_x, &success_x);
@@ -102,7 +115,91 @@ void ScriptReader::load(const std::string &path_script){
 
                 mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
 
-            }else if (line.rfind("print", 0) == 0) {
+            }else if (line.rfind("turngmissileto", 0) == 0){
+                entered = true;
+                std::cout << "turn guided missile to !!" << std::endl;
+                line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
+                line = line.substr(15, line.size()-16);
+                std::vector<std::string> params = split(line, ',');
+                if (params.size()!=2){
+                    std::cout << "segmentation fault : " << line << std::endl;
+                    continuer = false;
+                    break;
+                }
+                ParamVar id, angle;
+                char *success_id, *success_angle;
+                char *str_id = (char*)params[0].c_str(), *str_angle = (char*)params[1].c_str();
+                double val_id = std::strtof(str_id, &success_id);
+                double val_angle = std::strtof(str_angle, &success_angle);
+                id.doubleval = val_id;angle.doubleval = val_angle;
+                id.expr = params[0];angle.expr = params[1];
+                id.type = CONSTANT;angle.type = CONSTANT;
+
+                if (std::isnan(val_id) || success_id == str_id){
+                    id.type = VAR;
+                }//else std::cout << "const type x : "<<line<< std::endl;
+                if (std::isnan(val_angle) || success_angle == str_angle){
+                    angle.type = VAR;
+                }//else std::cout << "const type y : "<<line<< std::endl;
+
+                std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
+
+                if (ptrblock.lock() != nullptr){
+                    ptr = std::make_shared<GMissileTurnCommand>(ptrblock, id, angle);
+                }else{
+                    ptr = std::make_shared<GMissileTurnCommand>(mainblock, id, angle);
+                }
+
+                commands.push_back(ptr);
+
+                mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
+
+            }else if (line.rfind("shootmissile", 0) == 0) {
+                std::cout << "shoot misisle !!" << std::endl;
+                entered = true;
+                line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
+                line = line.substr(13, line.size()-14);
+                std::cout << "line : " << line << std::endl;
+                std::vector<std::string> params = split(line, ',');
+                if (params.size()!=1){
+                    std::cout << "segmentation fault : " << line << std::endl;
+                    continuer = false;
+                    break;
+                }
+                char *success;
+                char *str = (char*)params[0].c_str();
+                double x = std::strtof(str, &success);
+                ParamVar offsetx;
+                offsetx.doubleval = x;
+                offsetx.expr = params[0];
+                offsetx.type = CONSTANT;
+
+                if (std::isnan(x) || success == str){
+                    offsetx.type = VAR;
+                }else std::cout << "param : " << offsetx.doubleval << std::endl;
+
+                std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
+                if (ptrblock.lock() != nullptr){
+                    ptr = std::make_shared<ShootMissileCommand>(ptrblock, offsetx);
+                }else{
+                    ptr = std::make_shared<ShootMissileCommand>(mainblock, offsetx);
+                }
+
+                commands.push_back(ptr);
+
+                mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
+
+            }else if (line.rfind("shootguidedmissile", 0) == 0){
+                std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
+                if (ptrblock.lock() != nullptr){
+                    ptr = std::make_shared<ShootGuidedMissile>(ptrblock);
+                }else{
+                    ptr = std::make_shared<ShootGuidedMissile>(mainblock);
+                }
+                commands.push_back(ptr);
+                mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
+            }
+            else if (line.rfind("print", 0) == 0) {
                 entered = true;
                 std::size_t tmpindex = line.find_first_of('(')+1;
                 line = line.substr(tmpindex, line.find_last_of(')')-tmpindex);
@@ -161,10 +258,8 @@ void ScriptReader::load(const std::string &path_script){
 
                 if (onexpr){
                     elems.push_back({str, EXPR});
-                    std::cout << "expression for (out loop) print : " << str << std::endl;
                 }else{
                     elems.push_back({str, STRING});
-                    std::cout << "string for (out loop) print : " << str << std::endl;
                 }
 
                 std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
@@ -293,19 +388,24 @@ void ScriptReader::load(const std::string &path_script){
                 std::string funcname("");
                 double val = 0;
                 bool func = false;
+                bool isInternalFunc = false;
                 size_t index = tab[1].find_first_of('(');
                 if (index != tab[1].npos){
                     size_t index_last = tab[1].find_last_of(')');
                     funcname = tab[1].substr(0, index);
-                    std::cout << "funcname : " << funcname << std::endl;
-                    std::string strvars = tab[1].substr(index+1, index_last-index-1);
-                    std::cout << "strvars : " << strvars << std::endl;
-                    std::vector<std::string> vars = split(strvars, ',');
-                    std::cout << "first vars : " << vars[0] << std::endl;
-                    if (mainblock->functionExist(funcname)){
-                        addBlockCallFunc(funcname, vars);
-                        func = true;
-                    }
+                    touseline = tab[1];
+                    isInternalFunc = std::find(internalFunctions.begin(), internalFunctions.end(), funcname) != internalFunctions.end();
+                    if (!isInternalFunc){
+                        std::cout << "funcname : " << funcname << std::endl;
+                        std::string strvars = tab[1].substr(index+1, index_last-index-1);
+                        std::cout << "strvars : " << strvars << std::endl;
+                        std::vector<std::string> vars = split(strvars, ',');
+                        std::cout << "first vars : " << vars[0] << std::endl;
+                        if (mainblock->functionExist(funcname)){
+                            addBlockCallFunc(funcname, vars);
+                            func = true;
+                        }
+                    }else func = true;
                 }
                 if (!func){
                     if (mainblock->evalParserExpr(tab[1], val)){
@@ -322,20 +422,34 @@ void ScriptReader::load(const std::string &path_script){
                 mainblock->addVar(name, val);
 
                 if (func){
-                    std::shared_ptr<ScriptBlock> blockfuncptr = mainblock->getLastEndedBlock().lock();
                     std::shared_ptr<VarSetCommmand> commandptr;
-                    std::shared_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock().lock();
-                    if (ptrblock == nullptr){
-                        ptrblock = mainblock;
+                    if (!isInternalFunc){
+                        std::shared_ptr<ScriptBlock> blockfuncptr = mainblock->getLastEndedBlock().lock();
+                        std::shared_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock().lock();
+                        if (ptrblock == nullptr){
+                            ptrblock = mainblock;
+                        }
+                        double *val = ptrblock->getVarPtr(tab[0]);
+                        blockfuncptr->addParentVar(tab[0], val);
+                        commandptr = std::make_shared<VarSetCommmand>(ptrblock, "return", tab[0]);
+                        commands.push_back(commandptr);
+                        mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
+
+                    }else{
+                        std::shared_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock().lock();
+                        if (ptrblock == nullptr){
+                            ptrblock = mainblock;
+                        }
+                        commandptr = std::make_shared<VarSetCommmand>(ptrblock, "return", tab[0]);
+                        toaddcommand = commandptr;
+                        linetoaddcommand = nbline+1;
+                        dontreadline = true;
                     }
-                    double *val = ptrblock->getVarPtr(tab[0]);
-                    blockfuncptr->addParentVar(tab[0], val);
-                    commandptr = std::make_shared<VarSetCommmand>(ptrblock, "return", tab[0]);
-                    commands.push_back(commandptr);
-                    mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
+
                     entered = true;
                 }
             }if (line.rfind('=') != line.npos && !entered){
+
                 line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
                 std::vector<std::string> tab = split(line, '=');
                 if ( tab.size() != 2)break;
@@ -343,30 +457,44 @@ void ScriptReader::load(const std::string &path_script){
                 std::string funcname("");
                 double val = 0;
                 size_t index = tab[1].find_first_of('(');
+                bool isInternalFunc = false;
+                std::shared_ptr<VarSetCommmand> commandptr;
+
                 if (index != tab[1].npos){
                     size_t index_last = tab[1].find_last_of(')');
                     funcname = tab[1].substr(0, index);
-                    std::cout << "funcname : " << funcname << std::endl;
-                    std::string strvars = tab[1].substr(index+1, index_last-index-1);
-                    std::cout << "strvars : " << strvars << std::endl;
-                    std::vector<std::string> vars = split(strvars, ',');
-                    if (mainblock->functionExist(funcname)){
-                        addBlockCallFunc(funcname, vars);
+                    touseline = tab[1];
+                    if(std::find(internalFunctions.begin(), internalFunctions.end(), funcname) != internalFunctions.end()){
+                        std::shared_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock().lock();
+                        if (ptrblock == nullptr){
+                            ptrblock = mainblock;
+                        }
+                        commandptr = std::make_shared<VarSetCommmand>(ptrblock, "return", tab[0]);
+                        toaddcommand = commandptr;
+                        linetoaddcommand = nbline+1;
+                        dontreadline = true;
+                    }else{
+                        std::string strvars = tab[1].substr(index+1, index_last-index-1);
+                        std::cout << "strvars : " << strvars << std::endl;
+                        std::vector<std::string> vars = split(strvars, ',');
+                        if (mainblock->functionExist(funcname)){
+                            addBlockCallFunc(funcname, vars);
+                        }
+                        std::weak_ptr<ScriptBlock> blockfuncptr = mainblock->getLastEndedBlock();
+                        std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
+                        if (ptrblock.lock() == nullptr){
+                            ptrblock = mainblock;
+                        }
+                        double *val = ptrblock.lock()->getVarPtr(tab[0]);
+                        blockfuncptr.lock()->addParentVar(tab[0], val);
+                        commandptr = std::make_shared<VarSetCommmand>(ptrblock, "return", tab[0]);
+                        commands.push_back(commandptr);
+                        mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
                     }
-                    std::weak_ptr<ScriptBlock> blockfuncptr = mainblock->getLastEndedBlock();
-                    std::shared_ptr<VarSetCommmand> commandptr;
-                    std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
-                    if (ptrblock.lock() == nullptr){
-                        ptrblock = mainblock;
-                    }
-                    double *val = ptrblock.lock()->getVarPtr(tab[0]);
-                    blockfuncptr.lock()->addParentVar(tab[0], val);
-                    commandptr = std::make_shared<VarSetCommmand>(ptrblock, "return", tab[0]);
-                    commands.push_back(commandptr);
-                    mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
                 }
 
                 else {
+
                     if (!mainblock->varExist(tab[0])){
                         std::cout << "segmentation fault var " << tab[0] << " not defined : " << line << std::endl;
                         continuer = false;
@@ -391,10 +519,15 @@ void ScriptReader::load(const std::string &path_script){
                     }
 
                     commands.push_back(commandptr);
-
-                    mainblock->addVar(tab[0], val);
                     mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
                 }
+
+            }
+            if (toaddcommand != nullptr && linetoaddcommand == nbline){
+                std::cout << "oui !!" << std::endl;
+                commands.push_back(toaddcommand);
+                mainblock->addCommand(std::weak_ptr<ScriptCommand>(toaddcommand));
+                toaddcommand = nullptr;
             }
             /*-----SYNTAXE TEST END-----*/
         }
@@ -403,6 +536,8 @@ void ScriptReader::load(const std::string &path_script){
 
     if (!mainblock->allBlocksEnded()){
         std::cout << "error during parsing all blocks are not ended !" << std::endl;
+    }else{
+        std::cout << "All blocks are correctly ended !! " << std::endl;
     }
 
     file_script.close();
@@ -488,10 +623,13 @@ void ScriptReader::addBlockCallFunc(const std::string &funcname, const std::vect
     }
 }
 
-void ScriptReader::initVars(const sf::Vector2f &pos, const Map &worldmap){
+void ScriptReader::initVars(const sf::Vector2f &pos, const Map &worldmap, float dt){
+    mainblock->addVar("time", UniversalRobotsTime.getElapsedTime().asMilliseconds());
     mainblock->addVar("posx", pos.x);mainblock->addVar("posy", pos.y);
-    int tmpx = pos.x+(TILE_SIZE/2) - (static_cast<int>(pos.x)%TILE_SIZE);tmpx/=TILE_SIZE;
-    int tmpy = pos.y+(TILE_SIZE/2) - (static_cast<int>(pos.y)%TILE_SIZE);tmpy/=TILE_SIZE;
+    mainblock->addVar("dt", dt);
+    sf::Vector2f middlepos(pos.x+(TILE_SIZE/2), pos.y+(TILE_SIZE/2));
+    int tmpx = middlepos.x - (static_cast<int>(middlepos.x)%TILE_SIZE);tmpx/=TILE_SIZE;
+    int tmpy = middlepos.y - (static_cast<int>(middlepos.y)%TILE_SIZE);tmpy/=TILE_SIZE;
     mainblock->addVar("mapx", tmpx);mainblock->addVar("mapy", tmpy);
 
     mainblock->addVar("blockupright", worldmap.getTile(tmpx+1, tmpy-1));

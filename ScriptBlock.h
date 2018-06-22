@@ -76,6 +76,7 @@ protected:
     std::weak_ptr<ScriptBlock> loopblock;
 
     std::vector<std::variant<std::weak_ptr<ScriptBlock>, std::weak_ptr<ScriptCommand>>> commandsorder;
+    std::vector<std::variant<std::weak_ptr<ScriptBlock>, std::weak_ptr<ScriptCommand>>> initOutLoopCommandsOrder;
 
     std::map<std::string, std::shared_ptr<Parser>> exprevaluated;
 
@@ -84,6 +85,8 @@ protected:
     bool condchain_entered;
 
     std::size_t index_lastcmd;
+
+    bool execInitCommands;
 };
 
 #endif // SCRIPTBLOCK_H

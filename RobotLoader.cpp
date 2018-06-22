@@ -37,8 +37,9 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
     std::vector<std::weak_ptr<ScriptCommand>> commands;
     for (std::size_t i = 0; i < robots.size(); i++){
         commands.clear();
-        robots[i].initScriptVars(arenamap);
+        robots[i].initScriptVars(arenamap, dt);
         robots[i].getScriptCommands(5, commands);
+        robots[i].updateMissiles(dt, arenamap);
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             std::string type = command->getType();
@@ -47,8 +48,8 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 sf::Vector2f pos = robots[i].getPos();
 
                 sf::Vector2f off;
-                off.x = command->getProp("offsetx")*dt;
-                off.y = command->getProp("offsety")*dt;
+                off.x = command->getProp("offsetx");
+                off.y = command->getProp("offsety");
 
                 sf::FloatRect rectrobot(pos.x, pos.y, TILE_SIZE, TILE_SIZE);
                 sf::Vector2f newpos = arenamap.collide(rectrobot, off);
@@ -56,6 +57,23 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 robots[i].setPos(newpos);
 
                 robots[i].setScriptVar("posx", robots[i].getPos().x);robots[i].setScriptVar("posy", robots[i].getPos().y);
+            }else if (type == "shootmissile"){
+                command->update();
+                robots[i].shootMissile(command->getProp("offsetx"));
+            }else if (type == "shootguidedmissile"){
+                idtype id = 0;
+                id = robots[i].shootGuidedMissile();
+                auto block = command->getBlock().lock();
+                if (block != nullptr){
+                    block->addVar("return", id);
+                }else{
+                    std::cout << "nullptr block shootguidedmissile RobotLoader" << std::endl;
+                }
+            }else if (type == "gmissileturn"){
+                command->update();
+                idtype id = static_cast<idtype>(command->getProp("id"));
+                int angle = static_cast<int>(command->getProp("angle"));
+                robots[i].setGMissileAngle(id, angle);
             }else if (type == "print"){
                 command->update();
                 std::cout << robots[i].getName() << " >> " << command->getStringProp("str") << std::endl;

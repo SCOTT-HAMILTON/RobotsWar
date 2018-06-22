@@ -29,7 +29,6 @@ public:
             while (continuer && !file_opt.eof()){
                 file_opt.getline(buffer, sizeof(buffer));
                 std::string line(buffer);
-                std::cout << line << std::endl;
                 if (line.rfind("author:", 0) == 0) {
                     author = line.substr(7, line.size()-7);
                     std::cout << "author : " << author << std::endl;
@@ -45,9 +44,7 @@ public:
             }
 
             if (std::isnan(nb_frames))continue;
-            std::cout << "hey !!" << std::endl;
             robots.emplace_back(author, nb_frames, dirs[i], PosesRandomizer(), worldmap);
-            std::cout << "hey 2!!" << std::endl;
             std::cout << std::endl;
 
         }

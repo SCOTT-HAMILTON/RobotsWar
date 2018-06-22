@@ -25,15 +25,15 @@ Map::Map(int nb_tiles_width, int nb_tiles_height) :
     for (std::size_t i = 0; i < nb_h; i++){
         idmap.push_back(std::vector<int>());
         for (std::size_t j = 0; j < nb_w; j++){
-            int id = rand()%2;
+            int id = rand()%1000;
+            if (id>800)id = 1;
+            else id = 0;
             int tmp_x = j/chunk_width;
             int tmp_y = i/chunk_height;
             chunks[tmp_y][tmp_x].setBlock(j, i, id);
             idmap.back().push_back(id);
         }
     }
-        std::cout << "ma p lol 3!!" << std::endl;
-
 }
 
 Map::~Map()
@@ -76,7 +76,7 @@ bool Map::collide(const sf::Vector2f &pos){
     return chunks[tmp_x][tmp_y].collide(pos, TILE_SIZE);
 }
 
-sf::Vector2f Map::collide(const sf::FloatRect &rect, const sf::Vector2f &vel){
+sf::Vector2f Map::collide(const sf::FloatRect &rect, const sf::Vector2f &vel) const{
     float min_swept = 1.0f;
     for (std::size_t i = 0; i < chunks.size(); i++){
         for (std::size_t j = 0; j < chunks[i].size(); j++){
@@ -85,7 +85,31 @@ sf::Vector2f Map::collide(const sf::FloatRect &rect, const sf::Vector2f &vel){
         }
     }
     if (min_swept<0)min_swept = 0;
-    return sf::Vector2f( rect.left+vel.x*min_swept, rect.top+vel.y*min_swept );
+    //if (min_swept<0.3f)min_swept = 0;
+    sf::Vector2f pos( rect.left+vel.x*min_swept, rect.top+vel.y*min_swept );
+    /*
+    if (min_swept == 0){
+        float mv_x, mv_y;
+        int mod_x = static_cast<int>(pos.x+rect.width)%TILE_SIZE;
+        int mod_y = static_cast<int>(pos.y+rect.height)%TILE_SIZE;
+        if (mod_x>=TILE_SIZE/2){
+            mv_x = TILE_SIZE-mod_x;
+        }else{
+            mv_x = -mod_x;
+        }
+        if (mod_y>=TILE_SIZE/2){
+            mv_y = TILE_SIZE-mod_y;
+        }else{
+            mv_y = -mod_y;
+        }
+
+        if (mv_y<mv_x){
+            pos.y = static_cast<int>(pos.y)+mv_y;
+        }else {
+            pos.x = static_cast<int>(pos.x)+mv_x;
+        }
+    }*/
+    return pos;
 }
 
 int Map::getNbTilesWidth() const{

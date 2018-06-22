@@ -1,7 +1,7 @@
 #include "MoveCommand.h"
 #include <cmath>
 
-MoveCommand::MoveCommand(std::weak_ptr<ScriptBlock> block, offset x, offset y) :
+MoveCommand::MoveCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &x, const ParamVar &y) :
     ScriptCommand(block, "move"), offsetx(x), offsety(y)
 {
     std::cout << "new move !!" << std::endl;

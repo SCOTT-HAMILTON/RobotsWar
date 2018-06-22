@@ -5,24 +5,16 @@
 
 #include "ScriptCommand.h"
 
-enum TYPE{VAR, CONSTANT};
-
-struct offset{
-    TYPE type;
-    std::string expr;
-    double doubleval;
-};
-
 class MoveCommand : public ScriptCommand
 {
 public:
-    MoveCommand(std::weak_ptr<ScriptBlock> block, offset x, offset y);
+    MoveCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &x, const ParamVar &y);
     virtual ~MoveCommand();
     virtual void update();
 
 private:
-    offset offsetx;
-    offset offsety;
+    ParamVar offsetx;
+    ParamVar offsety;
 };
 
 #endif // MOVECOMMAND_H

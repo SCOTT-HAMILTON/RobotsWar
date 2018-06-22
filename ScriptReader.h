@@ -8,6 +8,8 @@
 #include <memory>
 #include <map>
 #include <variant>
+#include <vector>
+#include <algorithm>
 
 #include "ScriptBlock.h"
 #include "MoveCommand.h"
@@ -20,6 +22,11 @@
 #include "PrintCommand.h"
 #include "FunctionBlock.h"
 #include "Map.h"
+#include "ShootMissileCommand.h"
+#include "ShootGuidedMissile.h"
+#include "GMissileTurnCommand.h"
+
+const std::vector<std::string> internalFunctions = {"shootmissile", "shootguidedmissile"};
 
 class ScriptReader
 {
@@ -34,11 +41,12 @@ public:
     void load(const std::string &path_script);
 
     void displayMainBlockVars();
-    void initVars(const sf::Vector2f &pos, const Map &worldmap);
+    void initVars(const sf::Vector2f &pos, const Map &worldmap, float dt);
 
 private:
     std::shared_ptr<ScriptBlock> mainblock;
     std::vector<std::shared_ptr<ScriptCommand>> commands;
+    const static sf::Clock UniversalRobotsTime;
 };
 
 #endif // SCRIPTREADER_H

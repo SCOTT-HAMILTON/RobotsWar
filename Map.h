@@ -19,7 +19,7 @@ public:
     void dropToRenderer(Renderer &renderer);
     sf::Vector2f getRandomFreeCase();
     bool collide(const sf::Vector2f &pos);
-    sf::Vector2f collide(const sf::FloatRect &rect, const sf::Vector2f &vel);
+    sf::Vector2f collide(const sf::FloatRect &rect, const sf::Vector2f &vel) const;
     int getNbTilesWidth() const;
     int getNbTilesHeight() const;
     int getTile(int x, int y) const;

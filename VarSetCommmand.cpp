@@ -6,7 +6,6 @@ VarSetCommmand::VarSetCommmand(std::weak_ptr<ScriptBlock> block, const std::stri
     strings.insert(std::pair<std::string, std::string>("expr", expr));
     strings.insert(std::pair<std::string, std::string>("varname", varname));
     props.insert(std::pair<std::string, double>("val", value));
-    update();
 }
 
 VarSetCommmand::~VarSetCommmand()
