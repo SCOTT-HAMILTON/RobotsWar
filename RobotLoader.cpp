@@ -75,6 +75,32 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 idtype id = static_cast<idtype>(command->getProp("id"));
                 int angle = static_cast<int>(command->getProp("angle"));
                 robots[i].setGMissileAngle(id, angle);
+            }else if (type == "destroyblock"){
+                command->update();
+                int block = static_cast<idtype>(command->getProp("block"));
+                if (block > 4 || block < 0)std::cout << "error block " << block << " is invalid !!" << std::endl;
+                int x = static_cast<int>(robots[i].getPos().x+TILE_SIZE/2);
+                int y = static_cast<int>(robots[i].getPos().y+TILE_SIZE/2);
+                x = (x-(x%TILE_SIZE)) / TILE_SIZE;
+                y = (y-(y%TILE_SIZE)) / TILE_SIZE;
+                if (block == BLOCKRIGHT){
+                    std::cout << "right !!" << std::endl;
+                    x++;
+                }
+                else if (block == BLOCKLEFT){
+                    x--;
+                    std::cout << "left !!" << std::endl;
+                }
+                else if (block == BLOCKUP){
+                    y--;
+                    std::cout << "up !!" << std::endl;
+                }
+                else if (block == BLOCKDOWN){
+                    y++;
+                    std::cout << "down !!" << std::endl;
+                }
+                arenamap.setTile(x, y, 0);
+                robots[i].initScriptVars(arenamap, dt);
             }else if (type == "print"){
                 command->update();
                 std::cout << robots[i].getName() << " >> " << command->getStringProp("str") << std::endl;

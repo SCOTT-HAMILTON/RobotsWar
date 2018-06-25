@@ -33,7 +33,7 @@ int main()
     FunctorRandomPos posRandomizer(&mymap);
     RobotLoader robotloader(mymap, posRandomizer);
     sf::RenderWindow fenetre(sf::VideoMode(mymap.getNbTilesWidth()*TILE_SIZE*renderer.getScale().x, mymap.getNbTilesHeight()*TILE_SIZE*renderer.getScale().y), "RobotsWar !!!");
-    fenetre.setFramerateLimit(60);
+    //fenetre.setFramerateLimit(60);
 
     sf::Font font;font.loadFromFile("res/absender1.ttf");
     sf::Text frameratestext("0 FPS", font, 20);

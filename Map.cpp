@@ -26,7 +26,7 @@ Map::Map(int nb_tiles_width, int nb_tiles_height) :
         idmap.push_back(std::vector<int>());
         for (std::size_t j = 0; j < nb_w; j++){
             int id = rand()%1000;
-            if (id>800)id = 1;
+            if (id>400)id = 1;
             else id = 0;
             int tmp_x = j/chunk_width;
             int tmp_y = i/chunk_height;
@@ -124,4 +124,15 @@ int Map::getNbTilesHeight() const{
 int Map::getTile(int x, int y) const{
     if (x<0 || y<0 || x>=nb_w || y>=nb_h)return -1;
     return idmap[y][x];
+}
+
+int Map::setTile(int x, int y, int id){
+    if (x<0 || y<0 || x>=nb_w || y>=nb_h) return 1;
+    idmap[y][x] = id;
+
+    int tmp_x = x/chunk_width;
+    int tmp_y = y/chunk_height;
+
+    chunks[tmp_y][tmp_x].setBlock(x, y, id);
+    return 0;
 }

@@ -114,6 +114,39 @@ void ScriptReader::load(const std::string &path_script){
 
                 mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
 
+            }else if (line.rfind("destroyblock", 0) == 0){
+                entered = true;
+                std::cout << "destroy block!!" << std::endl;
+                line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
+                line = line.substr(13, line.size()-14);
+                std::vector<std::string> params = split(line, ',');
+                if (params.size()!=1){
+                    std::cout << "segmentation fault : " << line << std::endl;
+                    continuer = false;
+                    break;
+                }
+                ParamVar block;
+                char *success_block;
+                char *str_block = (char*)params[0].c_str();
+                double val_block = std::strtof(str_block, &success_block);
+                block.doubleval = val_block;
+                block.expr = params[0];
+                block.type = CONSTANT;
+                if (std::isnan(val_block) || success_block == str_block){
+                    block.type = VAR;
+                }
+
+                std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
+
+                if (ptrblock.lock() != nullptr){
+                    ptr = std::make_shared<DestroyBlockCommand>(ptrblock, block);
+                }else{
+                    ptr = std::make_shared<DestroyBlockCommand>(mainblock, block);
+                }
+
+                commands.push_back(ptr);
+
+                mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
             }else if (line.rfind("turngmissileto", 0) == 0){
                 entered = true;
                 std::cout << "turn guided missile to !!" << std::endl;

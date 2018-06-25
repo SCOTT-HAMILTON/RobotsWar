@@ -26,8 +26,9 @@
 #include "ShootGuidedMissile.h"
 #include "GMissileTurnCommand.h"
 #include "BlockEntryCommand.h"
+#include "DestroyBlockCommand.h"
 
-const std::vector<std::string> internalFunctions = {"shootmissile", "shootguidedmissile"};
+const std::vector<std::string> internalFunctions = {"shootmissile", "shootguidedmissile", "move", "turngmissileto", "destroyblock"};
 
 class ScriptReader
 {

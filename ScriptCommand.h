@@ -13,6 +13,8 @@ class ScriptBlock;
 
 enum TYPE{VAR, CONSTANT};
 
+enum RELATIF_BLOCK{BLOCKRIGHT, BLOCKLEFT, BLOCKUP, BLOCKDOWN};
+
 struct ParamVar{
     TYPE type;
     std::string expr;

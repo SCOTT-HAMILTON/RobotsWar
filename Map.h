@@ -23,6 +23,7 @@ public:
     int getNbTilesWidth() const;
     int getNbTilesHeight() const;
     int getTile(int x, int y) const;
+    int setTile(int x, int y, int id);
 
 private:
     int nb_w;
