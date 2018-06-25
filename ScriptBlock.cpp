@@ -139,11 +139,10 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
                 if (ptr != nullptr){
                     if (ptr->getType() == "functionblock");
                     else{
-                        tempcommands.push_back( std::make_shared<BlockEntryCommand>(ptr, ptr->nbCommands()) );
+                        tempcommands.push_back( std::make_shared<BlockEntryCommand>(ptr, 0) );
                         pCommands.push_back(tempcommands.back());
                         std::size_t before = pCommands.size();
                         commands_done += ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
-                        std::string typeblock = ptr->getType();
                         tempcommands.back()->setProp("nbcmd", pCommands.size()-before);
                     }
                 }else{

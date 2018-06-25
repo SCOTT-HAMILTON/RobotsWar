@@ -316,6 +316,13 @@ void ScriptReader::load(const std::string &path_script){
                 replace_all(condition_expr, "==", "=");
                 auto block = std::make_shared<WhileBlock>(condition_expr);
                 mainblock->addBlock(block);
+                block->me = block;
+
+                auto commandptr = std::make_shared<BlockEntryCommand>(block, 0);
+                commands.push_back(commandptr);
+                block->addNotPlayedCommand(commandptr);
+
+
                 std::cout << "condition : " << condition_expr << std::endl;
             }else if (line.rfind("if", 0) == 0){
                 entered = true;

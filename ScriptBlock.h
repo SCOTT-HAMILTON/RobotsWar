@@ -59,6 +59,8 @@ public:
 
     void displayVars();
 
+    std::weak_ptr<ScriptBlock> me;
+
 protected:
     std::string type;
     std::string name;
@@ -67,6 +69,7 @@ protected:
     std::map<std::string, std::string> strings;
     std::vector<std::weak_ptr<ScriptCommand>> commands;
     std::vector<std::shared_ptr<ScriptCommand>> tempcommands;
+    std::vector<std::shared_ptr<ScriptCommand>> ownedcommands;
     bool ended;
     bool asloopblock;
     std::vector<std::shared_ptr<ScriptBlock>> blocks;

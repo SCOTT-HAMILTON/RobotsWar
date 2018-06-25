@@ -11,7 +11,14 @@ double last_time_launch = time-10000;
 print("time start : "+time);
 
 for (i = 0, i<5, 1):
-	print("i : "+i);
+	print("for i : "+i);
+end
+
+
+double i = 0
+while (i < 10):
+	print("whle i : "+i);
+	i = i+1
 end
 
 func shoot(angle_missile):

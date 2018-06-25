@@ -25,6 +25,7 @@
 #include "ShootMissileCommand.h"
 #include "ShootGuidedMissile.h"
 #include "GMissileTurnCommand.h"
+#include "BlockEntryCommand.h"
 
 const std::vector<std::string> internalFunctions = {"shootmissile", "shootguidedmissile"};
 
