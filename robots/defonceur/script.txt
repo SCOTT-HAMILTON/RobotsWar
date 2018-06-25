@@ -9,14 +9,23 @@ double angle = 60
 double starttime = 0;
 double last_time_launch = time-10000;
 print("time start : "+time);
+
+for (i = 0, i<5, 1):
+	print("i : "+i);
+end
+
+func shoot(angle_missile):
+	id = shootguidedmissile();
+	print("id start : "+id);
+	turngmissileto(id, angle_missile);
+	starttime = time
+	last_time_launch = time
+end
+
 loop:
 	double elapsed_time_last_launch = time-last_time_launch
 	if (elapsed_time_last_launch > 11000):
-		id = shootguidedmissile();
-		print("id start : "+id);
-		turngmissileto(id, 60);
-		starttime = time
-		last_time_launch = time
+		shoot(60);
 	end 
 	if (counter<300):
 		counter = counter+1

@@ -1,5 +1,7 @@
 #include "ForBlock.h"
 
+#include <VarSetCommmand.h>
+
 ForBlock::ForBlock(const std::string &var, const std::string &boolexpr, const std::string &startexpr, const std::string &exprincremente) :
     ConditionBlock(boolexpr), varname(var), incrementer(exprincremente)
 {
@@ -37,19 +39,26 @@ double ForBlock::getValFromExpr(const std::string &expr){
     double val = 0;
     if (varExist(expr)){
         val = getVar(expr);
-    }else evalParserExpr(expr, val);
+    }else {
+
+        evalParserExpr(expr, val);
+    }
     return val;
 }
 
 std::size_t ForBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
     std::size_t start_size = pCommands.size();
     bool can = true;
-    int i = 0;
     double val = getValFromExpr(startexpr);
-    addVar(varname, val);
-    for (double i = val; can && nbCommands-(pCommands.size()-start_size)>0; i+=getValFromExpr(incrementer)){
+    double i = val;
+    pCommands.push_back(commands[0]);
+    start_size--;
+    while (can && nbCommands-(pCommands.size()-start_size)>0){
         ScriptBlock::getCommands(nbCommands-(pCommands.size()-start_size), pCommands, commandsended);
+        i+=getValFromExpr(incrementer);
         addVar(varname, i);
+        pCommands.push_back(commands[1]);
+        start_size--;
         can = canEnter();
     }
     if (can){
@@ -57,6 +66,6 @@ std::size_t ForBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_
     }else {
         commandsended = true;
     }
-    val = getValFromExpr(startexpr);
+
     addVar(varname, val);
 }

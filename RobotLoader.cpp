@@ -38,8 +38,9 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
     for (std::size_t i = 0; i < robots.size(); i++){
         commands.clear();
         robots[i].initScriptVars(arenamap, dt);
-        robots[i].getScriptCommands(5, commands);
+        robots[i].getScriptCommands(6, commands);
         robots[i].updateMissiles(dt, arenamap);
+        //std::cout << "commands size robotloader : " << commands.size() << std::endl;
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             std::string type = command->getType();

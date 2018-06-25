@@ -77,8 +77,7 @@ void ScriptReader::load(const std::string &path_script){
 
                 auto block = std::make_shared<FunctionBlock>(name, vars);
                 mainblock->addBlock(block);
-            }
-            else if (line.rfind("move", 0) == 0) {
+            }else if (line.rfind("move", 0) == 0) {
                 entered = true;
                 line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
                 line = line.substr(5, line.size()-6);
@@ -137,11 +136,10 @@ void ScriptReader::load(const std::string &path_script){
 
                 if (std::isnan(val_id) || success_id == str_id){
                     id.type = VAR;
-                }//else std::cout << "const type x : "<<line<< std::endl;
+                }
                 if (std::isnan(val_angle) || success_angle == str_angle){
                     angle.type = VAR;
-                }//else std::cout << "const type y : "<<line<< std::endl;
-
+                }
                 std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
 
                 if (ptrblock.lock() != nullptr){
@@ -198,8 +196,7 @@ void ScriptReader::load(const std::string &path_script){
                 }
                 commands.push_back(ptr);
                 mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptr));
-            }
-            else if (line.rfind("print", 0) == 0) {
+            }else if (line.rfind("print", 0) == 0) {
                 entered = true;
                 std::size_t tmpindex = line.find_first_of('(')+1;
                 line = line.substr(tmpindex, line.find_last_of(')')-tmpindex);
@@ -298,8 +295,17 @@ void ScriptReader::load(const std::string &path_script){
                 replace_all(condition_expr, "and", "&");
                 replace_all(condition_expr, "or", "&");
                 replace_all(condition_expr, "==", "=");
+                std::cout << "varname : " <<varname << ", condition_expr : " << condition_expr << ", startexpr : " << startexpr << ", incremeteexpr : " << incremeteexpr << std::endl;
                 auto block = std::make_shared<ForBlock>(varname, condition_expr, startexpr, incremeteexpr);
+
                 mainblock->addBlock(block);
+                auto commandptr = std::make_shared<VarSetCommmand>(block, startexpr, varname);
+                commands.push_back(commandptr);
+                block->addNotPlayedCommand(commandptr);
+
+                commandptr = std::make_shared<VarSetCommmand>(block, varname+"+"+incremeteexpr, varname);
+                commands.push_back(commandptr);
+                block->addNotPlayedCommand(commandptr);
             }else if (line.rfind("while", 0) == 0){
                 entered = true;
                 line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());

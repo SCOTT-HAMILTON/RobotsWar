@@ -1,2 +1,0 @@
-author:ScottHDev
-nb_frames:1

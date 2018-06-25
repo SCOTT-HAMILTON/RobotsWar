@@ -137,12 +137,15 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
                 auto block = std::get<std::weak_ptr<ScriptBlock>>(commands_to_exec->at(i));
                 auto ptr = block.lock();
                 if (ptr != nullptr){
-                    tempcommands.push_back( std::make_shared<BlockEntryCommand>(ptr, ptr->nbCommands()) );
-                    pCommands.push_back(tempcommands.back());
-                    std::size_t before = pCommands.size();
-                    commands_done += ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
-                    std::string typeblock = ptr->getType();
-                    tempcommands.back()->setProp("nbcmd", pCommands.size()-before);
+                    if (ptr->getType() == "functionblock");
+                    else{
+                        tempcommands.push_back( std::make_shared<BlockEntryCommand>(ptr, ptr->nbCommands()) );
+                        pCommands.push_back(tempcommands.back());
+                        std::size_t before = pCommands.size();
+                        commands_done += ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
+                        std::string typeblock = ptr->getType();
+                        tempcommands.back()->setProp("nbcmd", pCommands.size()-before);
+                    }
                 }else{
                     std::cout << "block ptr of commands order is nullptr !!" << std::endl;
                 }
@@ -197,12 +200,20 @@ void ScriptBlock::addCommand(const std::weak_ptr<ScriptCommand> &command){
         block->addCommand(command);
     }
     else {
-        commands.push_back(command);
-        commandsorder.push_back(commands.back());
+        commandsorder.push_back(command);
         if (type == "mainblock" && !asloopblock){
-            initOutLoopCommandsOrder.push_back(commands.back());
+            initOutLoopCommandsOrder.push_back(command);
         }
         std::cout << "              NEW COMMAND " << command.lock()->getType() << " to me " << type << std::endl;
+    }
+}
+
+void ScriptBlock::addNotPlayedCommand(const std::weak_ptr<ScriptCommand> &command){
+    std::shared_ptr<ScriptBlock> block = current_block.current_block.lock();
+    if (block != nullptr){
+        block->addNotPlayedCommand(command);
+    }else {
+        commands.push_back(command);
     }
 }
 
@@ -253,6 +264,7 @@ int ScriptBlock::evalParserExpr(const std::string &expr, double &val){
         code = ptrparser->Parse(expr, varsstr);
         if (code >= 0){
             std::cout << "error parsing expr " << expr << std::endl;
+            std::cout << "me : " << type << ", vars : " << varsstr << std::endl;
             std::cout << "error msg : " << ptrparser->ErrorMsg() << std::endl;
             return 1;
         }

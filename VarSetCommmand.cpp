@@ -21,7 +21,9 @@ void VarSetCommmand::update(){
             val = ptrblock->getVar(expr);
         }
         else {
+            //std::cout << "varset evaluating expr : " << expr << std::endl;
             ptrblock->evalParserExpr(expr, val);
+            //std::cout << "evaluated, val " << val << " for var " << varname << ", of block " << ptrblock->getType() << std::endl;
         }
 
         props["val"] = val;

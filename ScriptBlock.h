@@ -43,6 +43,7 @@ public:
     void addParentVar(const std::string &name, double *var);
     void addString(const std::string &name, const std::string &str);
     void addCommand(const std::weak_ptr<ScriptCommand> &command);
+    void addNotPlayedCommand(const std::weak_ptr<ScriptCommand> &command);
     int evalParserExpr(const std::string &expr, double &val);
     void setEnded();
     void addBlock(const std::string &block);
