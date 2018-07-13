@@ -187,12 +187,27 @@ void Robot::updateMissiles(float dt, const Map &arenamap){
             if (it == guidedmissiles.begin())break;
         }
     }
-
 }
 
 void Robot::setGMissileAngle(idtype id, int angle){
     if (guidedmissiles.find(id) != guidedmissiles.end()){
         guidedmissiles[id].direction = angle;
+    }else{
+        std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!" << std::endl;
+    }
+}
+
+double Robot::getGuidedMissileX(idtype id) const{
+    if (guidedmissiles.find(id) != guidedmissiles.end()){
+        return guidedmissiles.at(id).pos.x;
+    }else{
+        std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!" << std::endl;
+    }
+}
+
+double Robot::getGuidedMissileY(idtype id) const{
+    if (guidedmissiles.find(id) != guidedmissiles.end()){
+        return guidedmissiles.at(id).pos.y;
     }else{
         std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!" << std::endl;
     }

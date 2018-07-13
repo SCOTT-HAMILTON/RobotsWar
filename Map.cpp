@@ -26,7 +26,7 @@ Map::Map(int nb_tiles_width, int nb_tiles_height) :
         idmap.push_back(std::vector<int>());
         for (std::size_t j = 0; j < nb_w; j++){
             int id = rand()%1000;
-            if (id>400)id = 1;
+            if (id>500)id = 1;
             else id = 0;
             int tmp_x = j/chunk_width;
             int tmp_y = i/chunk_height;

@@ -6,16 +6,19 @@ RobotLoader::~RobotLoader()
 {
     //dtor
 }
-
-namespace fs =  std::experimental::filesystem::v1;
-
 std::vector<std::string> RobotLoader::get_directories(const std::string& s)
 {
     std::vector<std::string> r;
-    for(auto& p : fs::recursive_directory_iterator(s)){
-        if(p.status().type() == fs::file_type::directory){
-            r.push_back(p.path().string());
+    try{
+        for(auto& p : fs::recursive_directory_iterator(s)){
+            if(p.status().type() == fs::file_type::directory){
+                r.push_back(p.path().string());
+            }
         }
+    }catch(fs::filesystem_error &e){
+        std::cout << "error reading robots dir : " << e.what() << std::endl;
+        std::cout << "app directory : " << fs::current_path() << std::endl;
+        throw e;
     }
 
     return r;
@@ -40,7 +43,7 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
         robots[i].initScriptVars(arenamap, dt);
         robots[i].getScriptCommands(6, commands);
         robots[i].updateMissiles(dt, arenamap);
-        //std::cout << "commands size robotloader : " << commands.size() << std::endl;
+
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             std::string type = command->getType();
@@ -75,6 +78,28 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 idtype id = static_cast<idtype>(command->getProp("id"));
                 int angle = static_cast<int>(command->getProp("angle"));
                 robots[i].setGMissileAngle(id, angle);
+            }else if (type == "getgmissilex"){
+                command->update();
+                idtype id = static_cast<idtype>(command->getProp("id"));
+                double x = 0;
+                x = robots[i].getGuidedMissileX(id);
+                auto block = command->getBlock().lock();
+                if (block != nullptr){
+                    block->addVar("return", x);
+                }else{
+                    std::cout << "nullptr block getgmissilex RobotLoader" << std::endl;
+                }
+            }else if (type == "getgmissiley"){
+                command->update();
+                idtype id = static_cast<idtype>(command->getProp("id"));
+                double y = 0;
+                y = robots[i].getGuidedMissileY(id);
+                auto block = command->getBlock().lock();
+                if (block != nullptr){
+                    block->addVar("return", y);
+                }else{
+                    std::cout << "nullptr block getgmissiley RobotLoader" << std::endl;
+                }
             }else if (type == "destroyblock"){
                 command->update();
                 int block = static_cast<idtype>(command->getProp("block"));
@@ -84,22 +109,43 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 x = (x-(x%TILE_SIZE)) / TILE_SIZE;
                 y = (y-(y%TILE_SIZE)) / TILE_SIZE;
                 if (block == BLOCKRIGHT){
-                    std::cout << "right !!" << std::endl;
                     x++;
                 }
                 else if (block == BLOCKLEFT){
                     x--;
-                    std::cout << "left !!" << std::endl;
                 }
                 else if (block == BLOCKUP){
                     y--;
-                    std::cout << "up !!" << std::endl;
                 }
                 else if (block == BLOCKDOWN){
                     y++;
-                    std::cout << "down !!" << std::endl;
                 }
                 arenamap.setTile(x, y, 0);
+                robots[i].initScriptVars(arenamap, dt);
+            }else if (type == "createblock"){
+                command->update();
+                int blockrel = static_cast<idtype>(command->getProp("blockrel"));
+                if (blockrel > 4 || blockrel < 0)std::cout << "error block " << blockrel << " is invalid !!" << std::endl;
+                int x = static_cast<int>(robots[i].getPos().x+TILE_SIZE/2);
+                int y = static_cast<int>(robots[i].getPos().y+TILE_SIZE/2);
+                x = (x-(x%TILE_SIZE)) / TILE_SIZE;
+                y = (y-(y%TILE_SIZE)) / TILE_SIZE;
+                if (blockrel == BLOCKRIGHT){
+                    x++;
+                }
+                else if (blockrel == BLOCKLEFT){
+                    x--;
+                }
+                else if (blockrel == BLOCKUP){
+                    y--;
+                }
+                else if (blockrel == BLOCKDOWN){
+                    y++;
+                }
+
+                int blockid = command->getProp("blockid");
+
+                arenamap.setTile(x, y, blockid);
                 robots[i].initScriptVars(arenamap, dt);
             }else if (type == "print"){
                 command->update();

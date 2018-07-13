@@ -1,7 +1,7 @@
 #include "BlockEntryCommand.h"
 
-BlockEntryCommand::BlockEntryCommand(std::weak_ptr<ScriptBlock> block, std::size_t nb_cmds) :
-    ScriptCommand(block, "blockentry")
+BlockEntryCommand::BlockEntryCommand(std::weak_ptr<ScriptBlock> block, std::size_t nb_cmds, std::shared_ptr<bool> resultOfTest) :
+    ScriptCommand(block, "blockentry"), couldEnter(resultOfTest)
 {
     type += "_"+block.lock()->getType();
     props["nbcmd"] = nb_cmds;
@@ -16,7 +16,12 @@ BlockEntryCommand::~BlockEntryCommand()
 void BlockEntryCommand::update(){
     auto ptr = myblock.lock();
     if (ptr != nullptr){
-        props["canenter"] = ptr->canEnter();
+        bool val = ptr->canEnter();
+        props["canenter"] = val;
+        auto ptrResult = couldEnter.lock();
+        if (ptrResult != nullptr){
+            *ptrResult = val;
+        }
     }else std::cout << "Error update block entry cmd, block is nullptr!!" << std::endl;
 }
 

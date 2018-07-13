@@ -45,6 +45,8 @@ public:
     void initScriptVars(const Map &worldmap, float dt);
     void displayScriptVars();
     void setGMissileAngle(idtype id, int angle);
+    double getGuidedMissileX(idtype id) const;
+    double getGuidedMissileY(idtype id) const;
 
     static void initTexts();
 

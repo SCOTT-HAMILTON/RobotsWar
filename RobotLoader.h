@@ -12,13 +12,27 @@
 #include "ScriptCommand.h"
 #include "Map.h"
 
+namespace fs =  std::experimental::filesystem::v1;
+
 class RobotLoader
 {
+
 public:
+
+
+
+    RobotLoader(){}
+
     template<typename F>
-    RobotLoader(const Map &worldmap, F &PosesRandomizer){
+    void loadRobots(const Map &worldmap, F &PosesRandomizer){
+        std::vector<std::string> dirs;
         std::string file_path;
-        std::vector<std::string> dirs = get_directories("robots");
+        try{
+            dirs = get_directories("robots");
+        }catch(fs::filesystem_error &e){
+            throw e;
+        }
+
         for (std::size_t i = 0; i < dirs.size(); i++){
             std::ifstream file_opt(dirs[i]+"/prop.txt");
             if (!file_opt.good())continue;
@@ -46,9 +60,10 @@ public:
             if (std::isnan(nb_frames))continue;
             robots.emplace_back(author, nb_frames, dirs[i], PosesRandomizer(), worldmap);
             std::cout << std::endl;
-
         }
     }
+
+
 
     virtual ~RobotLoader();
 

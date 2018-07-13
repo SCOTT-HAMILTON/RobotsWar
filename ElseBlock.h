@@ -12,9 +12,12 @@ public:
     ElseBlock(std::weak_ptr<ScriptBlock> precblock);
     virtual ~ElseBlock();
     virtual bool canEnter();
+    virtual size_t getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended);
 
 private:
     std::weak_ptr<ScriptBlock> prec_block;
+    bool stillCan;
+    size_t prec_indexlastcmd;
 };
 
 #endif // ELSE_H

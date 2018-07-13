@@ -12,6 +12,10 @@ public:
     virtual ~WhileBlock();
     virtual bool canEnter();
     virtual std::size_t getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands, bool &commandsended);
+
+private:
+    std::shared_ptr<bool> resultLastEntryTest;
+    bool waitingForResult;
 };
 
 #endif // WHILEBLOCK_H

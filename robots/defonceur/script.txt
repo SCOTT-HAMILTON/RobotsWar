@@ -1,7 +1,7 @@
 double speedx = 100
 double speedy = 100
-double offx = 0
-double offy = speedy
+double offx = -speedx
+double offy = 0
 double change_dir = 1
 double counter = 0
 double id = -1
@@ -9,15 +9,15 @@ double angle = 60
 double starttime = 0;
 double last_time_launch = time-10000;
 print("time start : "+time);
-double direction = 3
+double direction = 1
 
-for (i = 0, i<5, 1):
+for (i = 0, i<2, 1):
 	print("for i : "+i);
 end
 
 
 double i = 0
-while (i < 10):
+while (i < 2):
 	print("whle i : "+i);
 	i = i+1
 end
@@ -34,6 +34,7 @@ loop:
 	double elapsed_time_last_launch = time-last_time_launch
 	if (elapsed_time_last_launch > 11000):
 		shoot(60);
+		//print("shooted");
 	end 
 	if (counter<300):
 		counter = counter+1
@@ -41,6 +42,9 @@ loop:
 	if (id>=0 and time-starttime<9000):
 		turngmissileto(id, angle);
 		angle = angle+dt*1000
+		double x_gmissile = getgmissileX(id);
+		double y_gmissile = getgmissileY(id);
+		//print(x_gmissile+", "+y_gmissile)
 	end
 	
 
@@ -50,24 +54,33 @@ loop:
 	if (offx < 0 and posx <= 0 ):
 		offx = speedx
 		direction = 0
-		print("right")
+		print("right border")
 	else if (offy < 0 and posy <= 0 ):
 		offy = speedy
 		direction = 3
-		print("down")
+		print("down border")
 	else if (offx > 0 and posx >= 18*16-16):
+		//print("oui")
 		offx = -speedx
 		direction = 1
-		print("left")
+		print("left border")
 	else if (offy > 0 and posy >= 18*16-16):
 		offy = -speedy
 		direction = 2
-		print("up")
+		print("up border")
 	end
+		
 	
 	move(offx*dt, offy*dt);
 	if ( prec_x == posx and prec_y == posy ):
+		print("direction destroy"+direction)
 		destroyblock(direction);
+		if (direction == 1 or direction == 3):
+			createblock(direction-1, 6)
+		else:
+			createblock(direction+1, 4)
+		end
+		
 		if (blockright == 0):
 			offx = speedx
 			offy = 0

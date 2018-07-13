@@ -13,9 +13,10 @@ class ScriptBlock;
 class BlockEntryCommand : public ScriptCommand
 {
 public:
-    BlockEntryCommand(std::weak_ptr<ScriptBlock> block, std::size_t nb_cmds);
+    BlockEntryCommand(std::weak_ptr<ScriptBlock> block, std::size_t nb_cmds, std::shared_ptr<bool> resultOfTest = nullptr);
     virtual ~BlockEntryCommand();
     virtual void update();
+    std::weak_ptr<bool> couldEnter;
 };
 
 #endif // BLOCKENTRYCOMMAND_H

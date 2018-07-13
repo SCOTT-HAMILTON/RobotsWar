@@ -1,6 +1,6 @@
-#include "VarSetCommmand.h"
+#include "VarSetCommand.h"
 
-VarSetCommmand::VarSetCommmand(std::weak_ptr<ScriptBlock> block, const std::string &expr, const std::string &var) :
+VarSetCommand::VarSetCommand(std::weak_ptr<ScriptBlock> block, const std::string &expr, const std::string &var) :
     ScriptCommand(block, "varset"), expr(expr), varname(var)
 {
     strings.insert(std::pair<std::string, std::string>("expr", expr));
@@ -8,12 +8,12 @@ VarSetCommmand::VarSetCommmand(std::weak_ptr<ScriptBlock> block, const std::stri
     props.insert(std::pair<std::string, double>("val", value));
 }
 
-VarSetCommmand::~VarSetCommmand()
+VarSetCommand::~VarSetCommand()
 {
     //dtor
 }
 
-void VarSetCommmand::update(){
+void VarSetCommand::update(){
     std::shared_ptr<ScriptBlock> ptrblock = myblock.lock();
     if (ptrblock != nullptr){
         double val;
@@ -21,9 +21,7 @@ void VarSetCommmand::update(){
             val = ptrblock->getVar(expr);
         }
         else {
-            //std::cout << "varset evaluating expr : " << expr << std::endl;
             ptrblock->evalParserExpr(expr, val);
-            //std::cout << "evaluated, val " << val << " for var " << varname << ", of block " << ptrblock->getType() << std::endl;
         }
 
         props["val"] = val;

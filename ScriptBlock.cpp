@@ -104,19 +104,20 @@ void ScriptBlock::addString(const std::string &name, const std::string &str){
         strings[name] = str;
     }else strings.insert(std::pair<std::string, std::string>(name, str));
 }
-std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
+
+size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
     bool ismainblock = type == "mainblock";
     commandsended = false;
     std::size_t commands_done = 0;
     std::size_t size_pcommandsstart = pCommands.size();
     tempcommands.clear();
     bool launched = false;
-    std::vector<std::variant<std::weak_ptr<ScriptBlock>, std::weak_ptr<ScriptCommand>>> *commands_to_exec = &commandsorder;
+    std::vector<std::variant<std::weak_ptr<ScriptBlock>, std::weak_ptr<ScriptCommand>>> *commands_to_drop = &commandsorder;
 
     if (ismainblock){
         if (asloopblock){
             if (!execInitCommands){
-                commands_to_exec = &initOutLoopCommandsOrder;
+                commands_to_drop = &initOutLoopCommandsOrder;
             }
             else{
                 std::shared_ptr<ScriptBlock> block = loopblock.lock();
@@ -129,12 +130,12 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
     }
     if (!launched){
 
-        if (index_lastcmd>=commands_to_exec->size())index_lastcmd = 0;
+        if (index_lastcmd>=commands_to_drop->size())index_lastcmd = 0;
         bool last_ended_properly = true;
-        for (std::size_t i = index_lastcmd; i < commands_to_exec->size() && commands_done<nbCommands; i++){
+        for (std::size_t i = index_lastcmd; i < commands_to_drop->size() && commands_done<nbCommands && last_ended_properly; i++){
             last_ended_properly = true;
             try{
-                auto block = std::get<std::weak_ptr<ScriptBlock>>(commands_to_exec->at(i));
+                auto block = std::get<std::weak_ptr<ScriptBlock>>(commands_to_drop->at(i));
                 auto ptr = block.lock();
                 if (ptr != nullptr){
                     if (ptr->getType() == "functionblock");
@@ -150,7 +151,7 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
                 }
             }
             catch (const std::bad_variant_access&) {
-                auto cmd = std::get<std::weak_ptr<ScriptCommand>>(commands_to_exec->at(i));
+                auto cmd = std::get<std::weak_ptr<ScriptCommand>>(commands_to_drop->at(i));
                 auto ptr = cmd.lock();
                 if (ptr != nullptr){
                     pCommands.push_back(cmd);
@@ -161,9 +162,9 @@ std::size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::we
             index_lastcmd = i;
         }
         if (last_ended_properly)index_lastcmd++;
-        if (index_lastcmd>=commands_to_exec->size()){
+        if (index_lastcmd>=commands_to_drop->size()){
             index_lastcmd = 0;
-            if (commands_to_exec == &initOutLoopCommandsOrder){
+            if (commands_to_drop == &initOutLoopCommandsOrder){
                 execInitCommands = true;
             }
             commandsended = true;
@@ -389,6 +390,31 @@ void ScriptBlock::addBlock(std::shared_ptr<ScriptBlock> block){
         if (type == "mainblock" && !asloopblock){
             initOutLoopCommandsOrder.push_back(block);
         }
+
+        //vars test
+
+        std::string varsstr("");
+        std::size_t i = 0;
+        for (auto it = blocks.back()->vars.begin(); it != blocks.back()->vars.end(); it++){
+            varsstr += it->first;
+            auto it2 = it;
+            it2++;
+            if (it2 != blocks.back()->vars.end())varsstr += ", ";
+        }
+        std::cout << "VARS : " << varsstr << std::endl;
+
+        varsstr = "";
+
+        if (blocks.back()->parentvars.size() != 0){
+            if (varsstr != "")varsstr += ", ";
+            for (auto it = blocks.back()->parentvars.begin(); it != blocks.back()->parentvars.end(); it++){
+                varsstr += it->first;
+                auto it2 = it;
+                it2++;
+                if (it2 != blocks.back()->parentvars.end())varsstr += ", ";
+            }
+        }
+        std::cout << "PARENTVARS : " << varsstr << std::endl;
     }
 }
 
@@ -472,4 +498,8 @@ std::weak_ptr<ScriptBlock> ScriptBlock::getFunction(const std::string &name){
     if (ptrblock != nullptr)return ptrblock->getFunction(name);
     if (parentfunctions.find(name) != parentfunctions.end())return parentfunctions.at(name);
     if (functions.find(name) != functions.end())return functions.at(name);
+}
+
+bool ScriptBlock::getResultLastCanEnter(){
+    return resultLastCanEnter;
 }

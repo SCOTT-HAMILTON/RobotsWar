@@ -31,13 +31,14 @@ public:
     double *getPersonalVarPtr(const std::string &name);
     std::string getVarName(std::size_t index);
     const std::string &getString(const std::string &name);
-    virtual std::size_t getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands, bool &commandsended);
+    virtual size_t getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands, bool &commandsended);
     std::weak_ptr<ScriptBlock> getCurBlock();
     std::weak_ptr<ScriptBlock> getLastEndedBlock();
     std::weak_ptr<ScriptBlock> getFunction(const std::string &name);
     bool getStat();
     bool isCondChainEntered();
     int nbCommands();
+    bool getResultLastCanEnter();
 
     void addVar(const std::string &name, double var);
     void addParentVar(const std::string &name, double *var);
@@ -91,6 +92,8 @@ protected:
     std::size_t index_lastcmd;
 
     bool execInitCommands;
+    bool resultLastCanEnter;
+
 };
 
 #endif // SCRIPTBLOCK_H
