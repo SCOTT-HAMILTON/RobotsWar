@@ -34,7 +34,7 @@ loop:
 	double elapsed_time_last_launch = time-last_time_launch
 	if (elapsed_time_last_launch > 11000):
 		shoot(60);
-		//print("shooted");
+		print("Salut neal !!!");
 	end 
 	if (counter<300):
 		counter = counter+1

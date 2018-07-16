@@ -65,9 +65,9 @@ public:
     bool functionExist(const std::string &funcname);
     void createFuncVarSet(const std::string &varname, const std::string &funcname, const std::vector<std::string> &vars);
     void createInternalFuncVarSet(const std::string &varname, const std::string &funcstr, size_t current_line);
-    void parseInternalFunctions(bool &entered, std::string &line, bool &continuer);
-    void parseLoops(bool &entered, std::string &line, bool &continuer);
-    void parseConditionBlocks(bool &entered, std::string &line, bool &continuer);
+    bool parseInternalFunctions(bool &entered, std::string &line, bool &continuer);
+    bool parseLoops(bool &entered, std::string &line, bool &continuer);
+    bool parseConditionBlocks(bool &entered, std::string &line, bool &continuer);
 
 private:
     std::shared_ptr<ScriptBlock> mainblock;

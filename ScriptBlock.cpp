@@ -325,7 +325,7 @@ void ScriptBlock::addBlock(const std::string &block){
             initOutLoopCommandsOrder.push_back(blocks.back());
         }
 
-        std::cout << "          ADD BLOCK : " << blocks.back()->getType() << std::endl << std::endl;
+        std::cout << "          ADD BLOCK (custom named block): " << blocks.back()->getType() << std::endl << std::endl;
 
         //vars test
 

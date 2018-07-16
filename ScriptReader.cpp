@@ -38,7 +38,8 @@ bool extractParams(std::string &line, size_t nb_params, std::vector<ParamVar> &p
     return false;
 }
 
-void ScriptReader::parseConditionBlocks(bool &entered, std::string &line, bool &continuer){
+bool ScriptReader::parseConditionBlocks(bool &entered, std::string &line, bool &continuer){
+    if (entered) return false;
     if (line.rfind("if", 0) == 0){
         entered = true;
         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
@@ -65,9 +66,11 @@ void ScriptReader::parseConditionBlocks(bool &entered, std::string &line, bool &
         auto block = std::make_shared<ElseBlock>(mainblock->getLastEndedBlock());
         mainblock->addBlock(block);
     }
+    return false;
 }
 
-void ScriptReader::parseLoops(bool &entered, std::string &line, bool &continuer){
+bool ScriptReader::parseLoops(bool &entered, std::string &line, bool &continuer){
+    if (entered) return false;
     if (line.rfind("for", 0) == 0){
         entered = true;
         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
@@ -112,9 +115,11 @@ void ScriptReader::parseLoops(bool &entered, std::string &line, bool &continuer)
         block->me = block;
         std::cout << "condition : " << condition_expr << std::endl;
     }
+    return false;
 }
 
-void ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool &continuer){
+bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool &continuer){
+    if (entered) return false;
     if (line.rfind("getgmissileY", 0) == 0){
         entered = true;
         std::cout << "new get guided missile Y pos command !!" << std::endl;
@@ -371,7 +376,7 @@ void ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
         mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptrcommand));
 
     }
-
+    return false;
 }
 
 void ScriptReader::createInternalFuncVarSet(const std::string &varname, const std::string &funcstr, size_t current_line){
@@ -483,133 +488,135 @@ void ScriptReader::load(const std::string &path_script){
                 //Base Syntaxe
                 parseLoops(entered, line, continuer);
                 parseConditionBlocks(entered, line, continuer);
-                if (line.rfind("end", 0) == 0){
-                    entered = true;
-                    mainblock->addBlockEnd();
-                }else if (line.rfind("//", 0) == 0){
-                    entered = true;
-                    std::cout << "com!" << std::endl;
-                }else if (line.rfind("func", 0) == 0){
-                    entered = true;
-                    std::vector<std::string> vars;
-                    std::string name;
-                    line = line.substr(4, line.size()-5);
-                    parseFuncStr(line, name, vars);
-
-                    auto block = std::make_shared<FunctionBlock>(name, vars);
-                    mainblock->addBlock(block);
-                }else if (line.back() == ':'){
-                    entered = true;
-                    line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
-                    mainblock->addBlock(line);
-                }else if (line.rfind("return", 0) == 0){
-                    line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
-                    std::cout << "return command !! " << line << std::endl;
-                    std::string expr = line.substr(6, line.size()-6);
-                    std::cout << "expr : " << expr << std::endl;
-                    std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
-                    std::shared_ptr<VarSetCommand> commandptr;
-                    if (ptrblock.lock() != nullptr){
-                        commandptr = std::make_shared<VarSetCommand>(ptrblock, expr, "return");
-                    }else{
-                        commandptr = std::make_shared<VarSetCommand>(mainblock, expr, "return");
-                    }
-
-                    commands.push_back(commandptr);
-                    mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
-                }else if (std::string funcname = line.substr(0, line.find_first_of('(')); mainblock->functionExist(funcname) ){
-                    std::vector<std::string> vars;
-                    parseFuncStr(line, funcname, vars);
-                    addBlockCallFunc(funcname, vars);
-                }else if (line.rfind("double ", 0) == 0) {
-                    line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
-                    line = line.substr(6, line.size()-6);
-                    std::vector<std::string> tab = split(line, '=');
-                    if (tab.size()!=2){
-                        std::cout << "segmentation fault : " << line << std::endl;
-                        continuer = false;
-                        break;
-                    }
-
-                    std::string varname = tab[0];
-                    std::string funcstr = tab[1];
-                    std::string expr = tab[1];
-                    std::vector<std::string> vars;
-                    std::string funcname("");
-                    parseFuncStr(funcstr, funcname, vars);
-                    if (functionExist(funcname)){
-                        if (!internalFunctionExist(funcname)){
-                            createFuncVarSet(varname, funcname, vars);
-                        }else{
-                            createInternalFuncVarSet(varname, funcstr, nbline);
-                        }
-
+                if (!entered && continuer){
+                    if (line.rfind("end", 0) == 0){
                         entered = true;
-                    }
-                    else{
-                        double val;
-                        if (mainblock->evalParserExpr(expr, val)){
-                            std::cout << "segmentation fault error during parsing trop lol: " << line << std::endl;
-                            continuer = false;
-                            break;
-                        }
-                        if (std::isnan(val)){
-                            std::cout << "segmentation fault : " << line << std::endl;
-                            continuer = false;
-                            break;
-                        }
-                    }
-                    mainblock->addVar(varname, -1);
-                }if (line.rfind('=') != line.npos && !entered){
-                    line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
-                    std::vector<std::string> tab = split(line, '=');
-                    if ( tab.size() != 2)break;
+                        mainblock->addBlockEnd();
+                    }else if (line.rfind("//", 0) == 0){
+                        entered = true;
+                        std::cout << "com!" << std::endl;
+                    }else if (line.rfind("func", 0) == 0){
+                        entered = true;
+                        std::vector<std::string> vars;
+                        std::string name;
+                        line = line.substr(4, line.size()-5);
+                        parseFuncStr(line, name, vars);
 
-                    std::string varname = tab[0];
-                    std::string funcstr = tab[1];
-                    std::string expr = tab[1];
-                    std::vector<std::string> vars;
-                    std::string funcname("");
-                    parseFuncStr(funcstr, funcname, vars);
-
-                    if (functionExist(funcname)){
-                        if(internalFunctionExist(funcname)){
-                            createInternalFuncVarSet(varname, funcstr, nbline);
-                        }else if (mainblock->functionExist(funcname)){
-                            createFuncVarSet(varname, funcname, vars);
-                        }
-                    }
-
-                    else {
-
-                        if (!mainblock->varExist(varname)){
-                            std::cout << "segmentation fault var " << varname << " not defined : " << line << std::endl;
-                            continuer = false;
-                            break;
-                        }
-                        double val;
-                        if (mainblock->evalParserExpr(expr, val)){
-                            std::cout << "segmentation fault error during parsing : " << line << std::endl;
-                            continuer = false;
-                            break;
-                        }
-                        if (std::isnan(val)){
-                            std::cout << "segmentation fault string evaluated doesn't give a number : " << line << std::endl;
-                            continuer = false;
-                            break;
-                        }
+                        auto block = std::make_shared<FunctionBlock>(name, vars);
+                        mainblock->addBlock(block);
+                    }else if (line.back() == ':'){
+                        entered = true;
+                        line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
+                        mainblock->addBlock(line);
+                    }else if (line.rfind("return", 0) == 0){
+                        line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
+                        std::cout << "return command !! " << line << std::endl;
+                        std::string expr = line.substr(6, line.size()-6);
+                        std::cout << "expr : " << expr << std::endl;
                         std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
                         std::shared_ptr<VarSetCommand> commandptr;
                         if (ptrblock.lock() != nullptr){
-                            commandptr = std::make_shared<VarSetCommand>(ptrblock, expr, varname);
+                            commandptr = std::make_shared<VarSetCommand>(ptrblock, expr, "return");
                         }else{
-                            commandptr = std::make_shared<VarSetCommand>(mainblock, expr, varname);
+                            commandptr = std::make_shared<VarSetCommand>(mainblock, expr, "return");
                         }
 
                         commands.push_back(commandptr);
                         mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
-                    }
+                    }else if (std::string funcname = line.substr(0, line.find_first_of('(')); mainblock->functionExist(funcname) ){
+                        std::vector<std::string> vars;
+                        parseFuncStr(line, funcname, vars);
+                        addBlockCallFunc(funcname, vars);
+                    }else if (line.rfind("double ", 0) == 0) {
+                        line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
+                        line = line.substr(6, line.size()-6);
+                        std::vector<std::string> tab = split(line, '=');
+                        if (tab.size()!=2){
+                            std::cout << "segmentation fault : " << line << std::endl;
+                            continuer = false;
+                            break;
+                        }
 
+                        std::string varname = tab[0];
+                        std::string funcstr = tab[1];
+                        std::string expr = tab[1];
+                        std::vector<std::string> vars;
+                        std::string funcname("");
+                        parseFuncStr(funcstr, funcname, vars);
+                        if (functionExist(funcname)){
+                            if (!internalFunctionExist(funcname)){
+                                createFuncVarSet(varname, funcname, vars);
+                            }else{
+                                createInternalFuncVarSet(varname, funcstr, nbline);
+                            }
+
+                            entered = true;
+                        }
+                        else{
+                            double val;
+                            if (mainblock->evalParserExpr(expr, val)){
+                                std::cout << "segmentation fault error during parsing trop lol: " << line << std::endl;
+                                continuer = false;
+                                break;
+                            }
+                            if (std::isnan(val)){
+                                std::cout << "segmentation fault : " << line << std::endl;
+                                continuer = false;
+                                break;
+                            }
+                        }
+                        mainblock->addVar(varname, -1);
+                    }if (line.rfind('=') != line.npos && !entered){
+                        line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
+                        std::vector<std::string> tab = split(line, '=');
+                        if ( tab.size() != 2)break;
+
+                        std::string varname = tab[0];
+                        std::string funcstr = tab[1];
+                        std::string expr = tab[1];
+                        std::vector<std::string> vars;
+                        std::string funcname("");
+                        parseFuncStr(funcstr, funcname, vars);
+
+                        if (functionExist(funcname)){
+                            if(internalFunctionExist(funcname)){
+                                createInternalFuncVarSet(varname, funcstr, nbline);
+                            }else if (mainblock->functionExist(funcname)){
+                                createFuncVarSet(varname, funcname, vars);
+                            }
+                        }
+
+                        else {
+
+                            if (!mainblock->varExist(varname)){
+                                std::cout << "segmentation fault var " << varname << " not defined : " << line << std::endl;
+                                continuer = false;
+                                break;
+                            }
+                            double val;
+                            if (mainblock->evalParserExpr(expr, val)){
+                                std::cout << "segmentation fault error during parsing : " << line << std::endl;
+                                continuer = false;
+                                break;
+                            }
+                            if (std::isnan(val)){
+                                std::cout << "segmentation fault string evaluated doesn't give a number : " << line << std::endl;
+                                continuer = false;
+                                break;
+                            }
+                            std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
+                            std::shared_ptr<VarSetCommand> commandptr;
+                            if (ptrblock.lock() != nullptr){
+                                commandptr = std::make_shared<VarSetCommand>(ptrblock, expr, varname);
+                            }else{
+                                commandptr = std::make_shared<VarSetCommand>(mainblock, expr, varname);
+                            }
+
+                            commands.push_back(commandptr);
+                            mainblock->addCommand(std::weak_ptr<ScriptCommand>(commandptr));
+                        }
+
+                    }
                 }
             }
 
