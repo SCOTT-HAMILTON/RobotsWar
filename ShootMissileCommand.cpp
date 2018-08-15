@@ -3,7 +3,7 @@
 ShootMissileCommand::ShootMissileCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &x) :
     ScriptCommand(block, "shootmissile"), offsetx(x)
 {
-    std::cout << "new shootmisile !!" << std::endl;
+    std::cout << "new shootmisile !!\n";
     if (offsetx.type == CONSTANT)props.insert(std::pair<std::string, double>("offsetx", offsetx.doubleval));
     else{
         offsetx.doubleval = NAN;

@@ -29,7 +29,7 @@ void PrintCommand::update(){
                 str += std::to_string(val);
             }
         }
-    }else std::cout << "Error print command, block is nullptr !!! " << std::endl;
+    }else std::cout << "Error print command, block is nullptr !!! \n";
     strings["str"] = str;
 
 }

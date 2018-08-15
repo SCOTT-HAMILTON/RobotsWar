@@ -3,7 +3,7 @@
 DestroyBlockCommand::DestroyBlockCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &blockparam) :
     ScriptCommand(block, "destroyblock")
 {
-    std::cout << "new destroy block !!" << std::endl;
+    std::cout << "new destroy block !!\n";
     if (blockparam.type == CONSTANT)props.insert(std::pair<std::string, double>("block", blockparam.doubleval));
     else{
         props.insert(std::pair<std::string, double>("block", blockparam.doubleval));

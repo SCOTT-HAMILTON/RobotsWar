@@ -50,6 +50,11 @@ public:
     void addBlock(const std::string &block);
     void addBlock(std::shared_ptr<ScriptBlock> block);
     void addBlockEnd();
+    void addFunctionBlock(const std::shared_ptr<ScriptBlock> &funcblock);
+
+    void copyVarsTo(std::weak_ptr<ScriptBlock> block);
+    void copyBlocksTo(std::weak_ptr<ScriptBlock> block);
+    void copyCommandsOrderTo(std::weak_ptr<ScriptBlock> block);
 
     bool varExist(const std::string &name);
     bool functionExist(const std::string &name);
@@ -71,6 +76,7 @@ protected:
     std::vector<std::weak_ptr<ScriptCommand>> commands;
     std::vector<std::shared_ptr<ScriptCommand>> tempcommands;
     std::vector<std::shared_ptr<ScriptCommand>> ownedcommands;
+    std::vector<std::variant<std::shared_ptr<ScriptBlock>, std::shared_ptr<ScriptCommand>>> ownedruntimecmds;
     bool ended;
     bool asloopblock;
     std::vector<std::shared_ptr<ScriptBlock>> blocks;

@@ -5,9 +5,10 @@ FunctionBlock::FunctionBlock(const std::string &name, const std::vector<std::str
 {
     this->name = name;
 
-    std::cout << "vars  FUNCTIONBLOCK : " << std::endl;
-    for (auto &it : vars){
-        this->vars.emplace(it, 0);
+    std::cout << "vars  FUNCTIONBLOCK : \n";
+    for (size_t i = 0; i < vars.size(); i++){
+        addVar(vars[i], 0);
+        std::cout << "added var \"" << vars[i] << "\"\n";
     }
 }
 

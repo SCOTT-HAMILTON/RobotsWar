@@ -10,14 +10,14 @@ bool extractParams(std::string &line, size_t nb_params, std::vector<ParamVar> &p
     line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
     size_t pos = line.find_first_of('(');
     if (pos == line.npos){
-        std::cout << "error parsing function of line : " << line << std::endl;
+        std::cout << "error parsing function of line : " << line << '\n';
         return true;
     }
     line = line.substr(pos+1, line.size()-pos-2);
-    std::cout << "line : " << line << std::endl;
+    std::cout << "line : " << line << '\n';
     std::vector<std::string> tab = split(line, ',');
     if (tab.size()!=nb_params){
-        std::cout << "segmentation fault : " << line << std::endl;
+        std::cout << "segmentation fault : " << line << '\n';
         return true;
     }
     for (size_t i = 0; i < nb_params; i++){
@@ -43,26 +43,26 @@ bool ScriptReader::parseConditionBlocks(bool &entered, std::string &line, bool &
     if (line.rfind("if", 0) == 0){
         entered = true;
         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
-        std::cout << "new if !! line : " << line << std::endl;
+        std::cout << "new if !! line : " << line << '\n';
         std::string condition_expr = line.substr(3, line.size()-4);
         formateCondition(condition_expr);
         auto block = std::make_shared<IfBlock>(condition_expr);
         mainblock->addBlock(block);
-        std::cout << "condition : " << condition_expr << std::endl;
+        std::cout << "condition : " << condition_expr << '\n';
     }else if (line.rfind("else if", 0) == 0){
         entered = true;
         mainblock->addBlockEnd();
         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
-        std::cout << "new else if !! line : " << line << std::endl;
+        std::cout << "new else if !! line : " << line << '\n';
         std::string condition_expr = line.substr(7, line.size()-8);
         formateCondition(condition_expr);
         auto block = std::make_shared<ElseIfBlock>(condition_expr, mainblock->getLastEndedBlock());
         mainblock->addBlock(block);
-        std::cout << "condition : " << condition_expr << std::endl;
+        std::cout << "condition : " << condition_expr << '\n';
     }else if (line.rfind("else", 0) == 0){
         entered = true;
         mainblock->addBlockEnd();
-        std::cout << "new else !! line : " << line << std::endl;
+        std::cout << "new else !! line : " << line << '\n';
         auto block = std::make_shared<ElseBlock>(mainblock->getLastEndedBlock());
         mainblock->addBlock(block);
     }
@@ -74,11 +74,11 @@ bool ScriptReader::parseLoops(bool &entered, std::string &line, bool &continuer)
     if (line.rfind("for", 0) == 0){
         entered = true;
         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
-        std::cout << "new for !! line : " << line << std::endl;
+        std::cout << "new for !! line : " << line << '\n';
         std::vector<std::string> tab = split(line.substr(4, line.size()-5), ',');
         std::string condition_expr;
         if (tab.size()!=3){
-            std::cout << "segmentation fault : " << line << std::endl;
+            std::cout << "segmentation fault : " << line << '\n';
             continuer = false;
         }
         condition_expr = tab[1];
@@ -86,13 +86,13 @@ bool ScriptReader::parseLoops(bool &entered, std::string &line, bool &continuer)
         std::string incremeteexpr = tab[2];
         tab = split(tmp_var, '=');
         if (tab.size()!=2){
-            std::cout << "segmentation fault : " << line << std::endl;
+            std::cout << "segmentation fault : " << line << '\n';
             continuer = false;
         }
         std::string varname = tab[0];
         std::string startexpr = tab[1];
         formateCondition(condition_expr);
-        std::cout << "varname : " <<varname << ", condition_expr : " << condition_expr << ", startexpr : " << startexpr << ", incremeteexpr : " << incremeteexpr << std::endl;
+        std::cout << "varname : " <<varname << ", condition_expr : " << condition_expr << ", startexpr : " << startexpr << ", incremeteexpr : " << incremeteexpr << '\n';
         auto block = std::make_shared<ForBlock>(varname, condition_expr, startexpr, incremeteexpr);
 
         mainblock->addBlock(block);
@@ -106,14 +106,14 @@ bool ScriptReader::parseLoops(bool &entered, std::string &line, bool &continuer)
     }else if (line.rfind("while", 0) == 0){
         entered = true;
         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
-        std::cout << "new while !! line : " << line << std::endl;
+        std::cout << "new while !! line : " << line << '\n';
         std::string condition_expr = line.substr(6, line.size()-7);
         formateCondition(condition_expr);
 
         auto block = std::make_shared<WhileBlock>(condition_expr);
         mainblock->addBlock(block);
         block->me = block;
-        std::cout << "condition : " << condition_expr << std::endl;
+        std::cout << "condition : " << condition_expr << '\n';
     }
     return false;
 }
@@ -122,13 +122,13 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
     if (entered) return false;
     if (line.rfind("getgmissileY", 0) == 0){
         entered = true;
-        std::cout << "new get guided missile Y pos command !!" << std::endl;
+        std::cout << "new get guided missile Y pos command !!\n";
 
         line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
         line = line.substr(13, line.size()-14);
         std::vector<std::string> params = split(line, ',');
         if (params.size()!=1){
-            std::cout << "segmentation fault : " << line << std::endl;
+            std::cout << "segmentation fault : " << line << '\n';
             continuer = false;
         }
         ParamVar id;
@@ -156,13 +156,13 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
     }
     else if (line.rfind("getgmissileX", 0) == 0){
         entered = true;
-        std::cout << "new get guided missile X pos command !!" << std::endl;
+        std::cout << "new get guided missile X pos command !!\n";
 
         line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
         line = line.substr(13, line.size()-14);
         std::vector<std::string> params = split(line, ',');
         if (params.size()!=1){
-            std::cout << "segmentation fault : " << line << std::endl;
+            std::cout << "segmentation fault : " << line << '\n';
             continuer = false;
         }
         ParamVar id;
@@ -194,7 +194,7 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
         line = line.substr(5, line.size()-6);
         std::vector<std::string> params = split(line, ',');
         if (params.size()!=2){
-            std::cout << "segmentation fault : " << line << std::endl;
+            std::cout << "segmentation fault : " << line << '\n';
             continuer = false;
         }
         ParamVar offsetx, offsety;
@@ -208,10 +208,10 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
 
         if (std::isnan(x) || success_x == str_x){
             offsetx.type = VAR;
-        }//else std::cout << "const type x : "<<line<< std::endl;
+        }//else std::cout << "const type x : "<<line<< '\n';
         if (std::isnan(y) || success_y == str_y){
             offsety.type = VAR;
-        }//else std::cout << "const type y : "<<line<< std::endl;
+        }//else std::cout << "const type y : "<<line<< '\n';
 
         std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
         std::shared_ptr<ScriptCommand> ptrcommand;
@@ -227,7 +227,7 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
 
     }else if (line.rfind("createblock", 0) == 0){
         entered = true;
-        std::cout << "create block!!" << std::endl;
+        std::cout << "create block!!\n";
         std::vector<ParamVar> params;
         if (!extractParams(line, 2, params)){
             std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
@@ -245,7 +245,7 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
         }else continuer = false;
     }else if (line.rfind("destroyblock", 0) == 0){
         entered = true;
-        std::cout << "destroy block!!" << std::endl;
+        std::cout << "destroy block!!\n";
         std::vector<ParamVar> params;
         if (!extractParams(line, 1, params)){
             std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
@@ -262,7 +262,7 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
         }else continuer = false;
     }else if (line.rfind("turngmissileto", 0) == 0){
         entered = true;
-        std::cout << "turn guided missile to !!" << std::endl;
+        std::cout << "turn guided missile to !!\n";
         std::vector<ParamVar> params;
         if (!extractParams(line, 2, params)){
             std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
@@ -278,7 +278,7 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
             mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptrcommand));
         }else continuer = false;
     }else if (line.rfind("shootmissile", 0) == 0) {
-        std::cout << "shoot misisle !!" << std::endl;
+        std::cout << "shoot misisle !!\n";
         entered = true;
         std::vector<ParamVar> params;
         if (!extractParams(line, 1, params)){
@@ -294,7 +294,7 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
             mainblock->addCommand(std::weak_ptr<ScriptCommand>(ptrcommand));
         }else continuer = false;
     }else if (line.rfind("shootguidedmissile", 0) == 0){
-        std::cout << "new shoot guided missile command !!" << std::endl;
+        std::cout << "new shoot guided missile command !!\n";
         std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
         std::shared_ptr<ScriptCommand> ptrcommand;
         if (ptrblock.lock() != nullptr){
@@ -308,7 +308,7 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
         entered = true;
         std::size_t tmpindex = line.find_first_of('(')+1;
         line = line.substr(tmpindex, line.find_last_of(')')-tmpindex);
-        std::cout << "new print command !! line : " << line  << std::endl;
+        std::cout << "new print command !! line : " << line  << '\n';
         std::vector<PrintElem> elems;
         bool onstr = false, onexpr = false, strfinished = true;
         std::string str("");
@@ -353,7 +353,7 @@ bool ScriptReader::parseInternalFunctions(bool &entered, std::string &line, bool
         }
 
         if (error){
-            std::cout << "segmentation fault : " << line << std::endl;
+            std::cout << "segmentation fault : " << line << '\n';
             continuer = false;
         }
 
@@ -454,6 +454,7 @@ std::vector<std::string> split(const std::string &text, char sep) {
     if (end != start) {
        tokens.push_back(text.substr(start));
     }
+    if (tokens.size() == 1 && tokens[0] == "")tokens.clear();
     return tokens;
 }
 
@@ -463,10 +464,10 @@ void ScriptReader::load(const std::string &path_script){
     std::ifstream file_script;
     file_script.open(path_script);
     bool continuer = true;
-    std::cout << "file : " << path_script << std::endl;
+    std::cout << "file : " << path_script << '\n';
     if (file_script.good()){
         char buffer[1000];
-        std::cout << "file good" << std::endl;
+        std::cout << "file good\n";
         unsigned long nbline = 0;
         while (continuer && !file_script.eof()){
             std::string line;
@@ -477,7 +478,7 @@ void ScriptReader::load(const std::string &path_script){
             }else line = touseline;
             touseline = "";
             line.erase(remove_if(line.begin(), line.end(), [](char c){return c == '\t' || c == ';';} ), line.end());
-            std::cout << nbline << " LINE : " << line << std::endl;
+            std::cout << nbline << " LINE : " << line << '\n';
 
             bool entered = false;
             /* SYNTAXE TESTS */
@@ -494,25 +495,34 @@ void ScriptReader::load(const std::string &path_script){
                         mainblock->addBlockEnd();
                     }else if (line.rfind("//", 0) == 0){
                         entered = true;
-                        std::cout << "com!" << std::endl;
+                        std::cout << "com!\n";
                     }else if (line.rfind("func", 0) == 0){
                         entered = true;
                         std::vector<std::string> vars;
                         std::string name;
                         line = line.substr(4, line.size()-5);
                         parseFuncStr(line, name, vars);
-
+                        std::cout << "body definition function \"" << name << "\"\n";
+                        std::cout << "vars : \n";
+                        for (auto &it : vars){
+                            std::cout << "it : " << it << "\n";
+                        }
+                        std::cout << "creating !!!\n";
+                        std::cout << "vars size func definition : " << vars.size() << "\n";
                         auto block = std::make_shared<FunctionBlock>(name, vars);
-                        mainblock->addBlock(block);
+                        if (block == nullptr) std::cout << "nullptr func block !!\n";
+                        std::cout << "finished !!\n";
+                        mainblock->addFunctionBlock(block);
+                        std::cout << "created !!\n";
                     }else if (line.back() == ':'){
                         entered = true;
                         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
                         mainblock->addBlock(line);
                     }else if (line.rfind("return", 0) == 0){
                         line.erase(remove_if(line.begin(), line.end(), isspace ), line.end());
-                        std::cout << "return command !! " << line << std::endl;
+                        std::cout << "return command !! " << line << '\n';
                         std::string expr = line.substr(6, line.size()-6);
-                        std::cout << "expr : " << expr << std::endl;
+                        std::cout << "expr : " << expr << '\n';
                         std::weak_ptr<ScriptBlock> ptrblock = mainblock->getCurBlock();
                         std::shared_ptr<VarSetCommand> commandptr;
                         if (ptrblock.lock() != nullptr){
@@ -532,7 +542,7 @@ void ScriptReader::load(const std::string &path_script){
                         line = line.substr(6, line.size()-6);
                         std::vector<std::string> tab = split(line, '=');
                         if (tab.size()!=2){
-                            std::cout << "segmentation fault : " << line << std::endl;
+                            std::cout << "segmentation fault : " << line << '\n';
                             continuer = false;
                             break;
                         }
@@ -551,19 +561,6 @@ void ScriptReader::load(const std::string &path_script){
                             }
 
                             entered = true;
-                        }
-                        else{
-                            double val;
-                            if (mainblock->evalParserExpr(expr, val)){
-                                std::cout << "segmentation fault error during parsing trop lol: " << line << std::endl;
-                                continuer = false;
-                                break;
-                            }
-                            if (std::isnan(val)){
-                                std::cout << "segmentation fault : " << line << std::endl;
-                                continuer = false;
-                                break;
-                            }
                         }
                         mainblock->addVar(varname, -1);
                     }if (line.rfind('=') != line.npos && !entered){
@@ -589,18 +586,18 @@ void ScriptReader::load(const std::string &path_script){
                         else {
 
                             if (!mainblock->varExist(varname)){
-                                std::cout << "segmentation fault var " << varname << " not defined : " << line << std::endl;
+                                std::cout << "segmentation fault var " << varname << " not defined : " << line << '\n';
                                 continuer = false;
                                 break;
                             }
                             double val;
                             if (mainblock->evalParserExpr(expr, val)){
-                                std::cout << "segmentation fault error during parsing : " << line << std::endl;
+                                std::cout << "segmentation fault error during parsing : " << expr << '\n';
                                 continuer = false;
                                 break;
                             }
                             if (std::isnan(val)){
-                                std::cout << "segmentation fault string evaluated doesn't give a number : " << line << std::endl;
+                                std::cout << "segmentation fault string evaluated doesn't give a number : " << line << '\n';
                                 continuer = false;
                                 break;
                             }
@@ -631,18 +628,18 @@ void ScriptReader::load(const std::string &path_script){
     }
 
     if (!continuer){
-        std::cout << "error during parsing !!" << std::endl;
+        std::cout << "error during parsing !!\n";
     }
     else if (!mainblock->allBlocksEnded()){
-        std::cout << "error during parsing all blocks are not ended !" << std::endl;
+        std::cout << "error during parsing all blocks are not ended !\n";
     }else{
-        std::cout << "All blocks are correctly ended !! " << std::endl;
+        std::cout << "All blocks are correctly ended !! \n";
     }
 
     file_script.close();
-    std::cout << std::endl << std::endl;
-    std::cout << "FILE SCRIPT " << path_script << " PARSED !!!" << std::endl;
-    std::cout << std::endl;
+    std::cout << '\n' << '\n';
+    std::cout << "FILE SCRIPT " << path_script << " PARSED !!!\n";
+    std::cout << '\n';
 }
 
 ScriptReader::ScriptReader()
@@ -684,7 +681,7 @@ void ScriptReader::addBlockCallFunc(const std::string &funcname, const std::vect
     if (mainblock->functionExist(funcname)){
         auto ptrblockcontainer = mainblock->getCurBlock().lock();
         if (ptrblockcontainer == nullptr)ptrblockcontainer = mainblock;
-        std::cout << "ptr block container : " << ptrblockcontainer->getType() << std::endl;
+        std::cout << "ptr block container : " << ptrblockcontainer->getType() << '\n';
         mainblock->addBlock("call"+funcname+"func");
         auto funcblockptr = mainblock->getCurBlock().lock();
         if (funcblockptr != nullptr){
@@ -692,10 +689,13 @@ void ScriptReader::addBlockCallFunc(const std::string &funcname, const std::vect
             if (funcptr != nullptr){
                 std::size_t index = 0;
                 //PARAMETERS DROPPING
-                for (auto it : exprs){
+                funcptr->copyVarsTo(funcblockptr);
+                funcptr->copyBlocksTo(funcblockptr);
+                funcptr->copyCommandsOrderTo(funcblockptr);
+                for (auto &it : exprs){
                     std::string expr = std::string(it);
                     std::string varname = funcptr->getVarName(index);
-                    std::cout << "adding var " << varname << " to " << funcblockptr->getType() << " equal to " << expr << std::endl;
+                    std::cout << "adding var " << varname << " to " << funcblockptr->getType() << " equal to " << expr << '\n';
                     funcblockptr->addVar(varname, 0);
                     commands.push_back(std::make_shared<VarSetCommand>(std::weak_ptr<ScriptBlock>(funcblockptr), expr, varname));
                     funcblockptr->addCommand(commands.back());
@@ -704,21 +704,11 @@ void ScriptReader::addBlockCallFunc(const std::string &funcname, const std::vect
                 }
                 double *val = ptrblockcontainer->getPersonalVarPtr("return");
                 funcblockptr->addParentVar("return" , val);
-
-                std::vector<std::weak_ptr<ScriptCommand>> cmds;
-                bool tmpbool;
-                funcptr->getCommands(funcptr->nbCommands(), cmds, tmpbool);
-                for (const auto &it : cmds){
-                    it.lock()->setBlock(funcblockptr);
-                    std::cout << "adding command " << it.lock()->getType() << ", to block " << funcblockptr->getType() << std::endl;
-                    funcblockptr->addCommand(it);
-                }
-
-            }else std::cout << "error script reader addblockcallfunc, funcblock is nullptr" << std::endl;
-        }else std::cout << "error script reader addblockcallfunc, block is nullptr" << std::endl;
+            }else std::cout << "error script reader addblockcallfunc, funcblock is nullptr\n";
+        }else std::cout << "error script reader addblockcallfunc, block is nullptr\n";
         mainblock->addBlockEnd();
     }else{
-        std::cout << "error script reader addblockcallfunc, funcname doesn't exist: " << funcname << std::endl;
+        std::cout << "error script reader addblockcallfunc, funcname doesn't exist: " << funcname << '\n';
     }
 }
 

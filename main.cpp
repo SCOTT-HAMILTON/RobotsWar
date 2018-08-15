@@ -37,7 +37,7 @@ int main()
     try{
         robotloader.loadRobots(mymap, posRandomizer);
     }catch(fs::filesystem_error &e){
-        std::cout << "exiting..." << std::endl;
+        std::cout << "exiting...\n";
         return 0;
     }
     sf::RenderWindow fenetre(sf::VideoMode(mymap.getNbTilesWidth()*TILE_SIZE*renderer.getScale().x, mymap.getNbTilesHeight()*TILE_SIZE*renderer.getScale().y), "RobotsWar !!!");
@@ -61,8 +61,6 @@ int main()
     sf::RectangleShape black_square(sf::Vector2f(16*renderer.getScale().x, 16*renderer.getScale().y));
     black_square.setFillColor(sf::Color(0, 0, 0));
 
-    float offset_pauses_timer = 0;
-    double lastclockt = 0;
     while (fenetre.isOpen())
     {
         framecounter++;
@@ -77,7 +75,6 @@ int main()
             frameratestext.setString(std::to_string( framecounter*2 )+" FPS");
             framecounter = 0;
         }
-        lastclockt = clockt;
         sf::Event event;
         while (fenetre.pollEvent(event))
         {

@@ -23,12 +23,12 @@ bool ElseBlock::canEnter(){
     auto ptr = prec_block.lock();
     if (ptr == nullptr){
         stat = false;
-        std::cout << "      ERROR block else, block pointed is nullptr !!" << std::endl;
+        std::cout << "      ERROR block else, block pointed is nullptr !!\n";
         return stat;
     }
     stat = !ptr->isCondChainEntered();
     stillCan = stat;
-    //std::cout << "else : " << stat << std::endl;
+    //std::cout << "else : " << stat << '\n';
     return stat;
 }
 

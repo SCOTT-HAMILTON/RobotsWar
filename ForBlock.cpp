@@ -3,7 +3,7 @@
 #include "VarSetCommand.h"
 
 ForBlock::ForBlock(const std::string &var, const std::string &boolexpr, const std::string &startexpr, const std::string &exprincremente) :
-    ConditionBlock(boolexpr), varname(var), incrementer(exprincremente)
+    ConditionBlock(boolexpr), incrementer(exprincremente), varname(var)
 {
     type = "forblock";
     this->startexpr = startexpr;
@@ -53,6 +53,7 @@ std::size_t ForBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_
     double i = val;
     pCommands.push_back(commands[0]);
     start_size--;
+    size_t nb = pCommands.size();
     while (can && nbCommands-(pCommands.size()-start_size)>0){
         ScriptBlock::getCommands(nbCommands-(pCommands.size()-start_size), pCommands, commandsended);
         i+=getValFromExpr(incrementer);
@@ -68,4 +69,6 @@ std::size_t ForBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_
     }
 
     addVar(varname, val);
+
+    return pCommands.size()-nb;
 }

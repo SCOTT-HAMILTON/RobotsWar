@@ -45,21 +45,21 @@ public:
                 std::string line(buffer);
                 if (line.rfind("author:", 0) == 0) {
                     author = line.substr(7, line.size()-7);
-                    std::cout << "author : " << author << std::endl;
+                    std::cout << "author : " << author << '\n';
                 }else if (line.rfind("nb_frames:", 0) == 0) {
                     std::string tmpstr = line.substr(10, line.size()-7);
                     try {
                         nb_frames = std::stoi(tmpstr);
                     }catch (std::exception &e){
-                        std::cout << "error converting string " << tmpstr << " to int : " << e.what() << std::endl;;
+                        std::cout << "error converting string " << tmpstr << " to int : " << e.what() << '\n';;
                     }
-                    std::cout << "nb_frames : " << nb_frames << std::endl;
+                    std::cout << "nb_frames : " << nb_frames << '\n';
                 }
             }
 
             if (std::isnan(nb_frames))continue;
             robots.emplace_back(author, nb_frames, dirs[i], PosesRandomizer(), worldmap);
-            std::cout << std::endl;
+            std::cout << '\n';
         }
     }
 

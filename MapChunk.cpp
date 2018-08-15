@@ -1,9 +1,8 @@
 #include "MapChunk.h"
 
-idtype MapChunk::cur_id = 0;
 
 MapChunk::MapChunk(const sf::Vector2f &pos, int nb_tiles_width, int nb_tiles_height, unsigned int divider) :
-    nb_w(nb_tiles_width), nb_h(nb_tiles_height), myid(cur_id)
+    nb_w(nb_tiles_width), nb_h(nb_tiles_height)
 {
     rect = sf::FloatRect(pos.x, pos.y, nb_w, nb_h);
     this->divider = divider;
@@ -12,15 +11,13 @@ MapChunk::MapChunk(const sf::Vector2f &pos, int nb_tiles_width, int nb_tiles_hei
     }else{
         type = BLOCKSCHUNK;
 
-        for (std::size_t i = 0; i < nb_tiles_height; i++){
+        for (int i = 0; i < nb_tiles_height; i++){
             blocks.push_back(std::vector<int>());
-            for (std::size_t j = 0; j < nb_tiles_width; j++){
+            for (int j = 0; j < nb_tiles_width; j++){
                 blocks.back().push_back(0);
             }
         }
     }
-
-    cur_id++;
 }
 
 MapChunk::~MapChunk()
@@ -45,9 +42,9 @@ bool MapChunk::setBlock(int x, int y, int id){
 void MapChunk::divide(int childdivider){
     int chunk_width = nb_w/divider;
     int chunk_height = nb_h/divider;
-    for (std::size_t i = 0; i < chunk_height; i++){
+    for (int i = 0; i < chunk_height; i++){
         childchunks.push_back(std::vector<MapChunk>());
-        for (std::size_t j = 0; j < chunk_width; j++){
+        for (int j = 0; j < chunk_width; j++){
             sf::Vector2f pos(rect.left+j*chunk_width, rect.top+i*chunk_height);
             childchunks.back().push_back(MapChunk(pos, chunk_width, chunk_height, childdivider));
         }
@@ -109,7 +106,7 @@ bool MapChunk::collide(const sf::Vector2f &pos, int tile_size){
 }
 
 float MapChunk::sweptCollide(const sf::FloatRect &collider, int tile_size, const sf::Vector2f &velcollider) const{
-    //std::cout << "\nswept collide !!!" << std::endl;
+    //std::cout << "\nswept collide !!!\n"';
     sf::FloatRect rectrange;
     int marge = 1;
 
@@ -130,7 +127,7 @@ float MapChunk::sweptCollide(const sf::FloatRect &collider, int tile_size, const
     if (velcollider.y>0){
         maxy += velcollider.y;
     }else miny += velcollider.y;
-    //std::cout << "minx, maxx, miny, maxy : " << minx << ", " << maxx << ", " << miny << ", " << maxy << std::endl;
+    //std::cout << "minx, maxx, miny, maxy : " << minx << ", " << maxx << ", " << miny << ", " << maxy << '\n';
     rectrange.left = minx;
     rectrange.top = miny;
     rectrange.width = maxx-minx;
@@ -139,8 +136,8 @@ float MapChunk::sweptCollide(const sf::FloatRect &collider, int tile_size, const
     sf::FloatRect realrect(rect.left*tile_size, rect.top*tile_size, rect.width*tile_size, rect.height*tile_size);
 
     if (!realrect.intersects(rectrange)){
-        //std::cout << "my rect out : " << realrect.left << ", " << realrect.top << ", " << realrect.width << ", " << realrect.height << std::endl;
-        //std::cout << "rectrange : " << rectrange.left << ", " << rectrange.top << ", " << rectrange.width << ", " << rectrange.height << std::endl;
+        //std::cout << "my rect out : " << realrect.left << ", " << realrect.top << ", " << realrect.width << ", " << realrect.height << '\n';
+        //std::cout << "rectrange : " << rectrange.left << ", " << rectrange.top << ", " << rectrange.width << ", " << rectrange.height << '\n';
         return 1.0f;
 
     }
@@ -159,7 +156,7 @@ float MapChunk::sweptCollide(const sf::FloatRect &collider, int tile_size, const
     float min_swept = 1;
 
     if (type == BLOCKSCHUNK){
-        //std::cout << "blocks chunk !!" << std::endl;
+        //std::cout << "blocks chunk !!\n"';
         for (std::size_t i = starty; i < blocks.size() && i < endy; i++){
             for (std::size_t j = startx; j < blocks[i].size() && j < endx; j++){
                 if (blocks[i][j] != 0){
@@ -184,7 +181,7 @@ float MapChunk::sweptCollide(const sf::FloatRect &collider, int tile_size, const
         }
     }
 
-    //std::cout << "min swept : " << min_swept << std::endl;
+    //std::cout << "min swept : " << min_swept << '\n';
 
     return min_swept;
 }
@@ -255,11 +252,14 @@ float MapChunk::sweptAABB1(const sf::FloatRect &b1, const sf::FloatRect &b2, con
     sf::Vector2f pos(0, 0);
 
     swept = dist_top_down/abs_vely;
-    swept = (swept<0) ? swept = 0 : ( (swept>1) ? swept = 1 : swept ) ;
+
+    if (swept<0)swept = 0;
+    else if (swept>1)swept = 1;
+
     collisionpt = {b1.left+vel.x*swept, b1.top+vel.y*swept};
     if (b2rectmarge.contains(collisionpt)){
         if (swept<result){
-            std::cout << "top down  !!" << std::endl;
+            std::cout << "top down  !!\n";
             if (zone != nullptr)*zone = DOWN_SIDE;
             result = swept;
             pos = collisionpt;
@@ -267,11 +267,14 @@ float MapChunk::sweptAABB1(const sf::FloatRect &b1, const sf::FloatRect &b2, con
     }
 
     swept = dist_left_left/abs_velx;
-    swept = (swept<0) ? swept = 0 : ( (swept>1) ? swept = 1 : swept ) ;
+
+    if (swept<0)swept = 0;
+    else if (swept>1)swept = 1;
+
     collisionpt = {b1.left+vel.x*swept, b1.top+vel.y*swept};
     if (b2rectmarge.contains(collisionpt)){
         if (swept<result){
-            std::cout << "left left  !!" << std::endl;
+            std::cout << "left left  !!\n";
             if (zone != nullptr)*zone = LEFT_SIDE;
             result = swept;
             pos = collisionpt;
@@ -279,7 +282,10 @@ float MapChunk::sweptAABB1(const sf::FloatRect &b1, const sf::FloatRect &b2, con
     }
 
     swept = dist_left_right/abs_velx;
-    swept = (swept<0) ? swept = 0 : ( (swept>1) ? swept = 1 : swept ) ;
+
+    if (swept<0)swept = 0;
+    else if (swept>1)swept = 1;
+
     collisionpt = {b1.left+vel.x*swept, b1.top+vel.y*swept};
     if (b2rectmarge.contains(collisionpt)){
         if (swept<result){
@@ -289,11 +295,14 @@ float MapChunk::sweptAABB1(const sf::FloatRect &b1, const sf::FloatRect &b2, con
     }
 
     swept = dist_top_top/abs_vely;
-    swept = (swept<0) ? swept = 0 : ( (swept>1) ? swept = 1 : swept ) ;
+
+    if (swept<0)swept = 0;
+    else if (swept>1)swept = 1;
+
     collisionpt = {b1.left+vel.x*swept, b1.top+vel.y*swept};
     if (b2rectmarge.contains(collisionpt)){
         if (swept<result){
-            std::cout << "top top  !!" << std::endl;
+            std::cout << "top top  !!\n";
             if (zone != nullptr)*zone = TOP_SIDE;
             result = swept;
             pos = collisionpt;

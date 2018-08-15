@@ -3,9 +3,9 @@
 idtype IfBlock::curid = 0;
 
 IfBlock::IfBlock(const std::string &boolexpr) :
-    ConditionBlock(boolexpr), myid(curid), stillCan(false), prec_indexlastcmd(0)
+    ConditionBlock(boolexpr), stillCan(false), prec_indexlastcmd(0), myid(curid)
 {
-    std::cout << "new if block my id : " << myid << std::endl;
+    std::cout << "new if block my id : " << myid << '\n';
     curid++;
     type = "ifblock";
 }
@@ -27,7 +27,7 @@ bool IfBlock::canEnter(){
     double val;
     if (evalParserExpr(expr, val)){
         stat = false;
-        std::cout << "ifblock error evaluating expr " << expr << std::endl;
+        std::cout << "ifblock error evaluating expr " << expr << '\n';
         condchain_entered = stat;
         return stat;
     }

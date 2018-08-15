@@ -34,9 +34,6 @@ private:
     ChunkType type;
     std::vector<std::vector<MapChunk>> childchunks;
     std::vector<std::vector<int>> blocks;
-    idtype myid;
-
-    static idtype cur_id;
 
     static float sweptAABB1(const sf::FloatRect &collider, const sf::FloatRect &block, const sf::Vector2f &velcollider, CollideZone *zone = nullptr);
     static float sweptAABB2(const sf::FloatRect &collider, const sf::FloatRect &block, const sf::Vector2f &velcollider, CollideZone *zone = nullptr);

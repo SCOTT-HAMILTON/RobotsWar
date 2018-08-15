@@ -1,7 +1,7 @@
 #include "Robot.h"
 
-std::map<int, sf::Texture> Robot::missiletexts = missiletexts;
-std::map<int, sf::Texture> Robot::guidedmissiletexts = guidedmissiletexts;
+std::map<int, sf::Texture> Robot::missiletexts;
+std::map<int, sf::Texture> Robot::guidedmissiletexts;
 sf::IntRect Robot::missilesize = sf::IntRect(0, 0, 14, 6);
 sf::IntRect Robot::guidedmissilesize = sf::IntRect(0, 0, 8, 8);
 float Robot::missilespeed = 100;
@@ -21,7 +21,7 @@ Robot::Robot(const std::string &author, int nb_frames, const std::string &dir, c
     std::size_t index = path.find_last_of("/\\")+1;
     if (index == path.npos)name = "defaultname";
     else name = path.substr(index , path.size());
-    std::cout << "name : " << name << std::endl;
+    std::cout << "name : " << name << '\n';
     this->author = author;
     this->nb_frames = nb_frames;
     sf::Image img;
@@ -193,7 +193,7 @@ void Robot::setGMissileAngle(idtype id, int angle){
     if (guidedmissiles.find(id) != guidedmissiles.end()){
         guidedmissiles[id].direction = angle;
     }else{
-        std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!" << std::endl;
+        std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!\n";
     }
 }
 
@@ -201,7 +201,8 @@ double Robot::getGuidedMissileX(idtype id) const{
     if (guidedmissiles.find(id) != guidedmissiles.end()){
         return guidedmissiles.at(id).pos.x;
     }else{
-        std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!" << std::endl;
+        std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!\n";
+        return 1;
     }
 }
 
@@ -209,6 +210,7 @@ double Robot::getGuidedMissileY(idtype id) const{
     if (guidedmissiles.find(id) != guidedmissiles.end()){
         return guidedmissiles.at(id).pos.y;
     }else{
-        std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!" << std::endl;
+        std::cout << "ERROR, id not correct missile n " << id << " doesn't exist !!\n";
+        return 1;
     }
 }

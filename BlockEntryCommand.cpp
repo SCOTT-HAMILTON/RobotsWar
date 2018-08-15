@@ -22,6 +22,6 @@ void BlockEntryCommand::update(){
         if (ptrResult != nullptr){
             *ptrResult = val;
         }
-    }else std::cout << "Error update block entry cmd, block is nullptr!!" << std::endl;
+    }else std::cout << "Error update block entry cmd, block is nullptr!!\n";
 }
 

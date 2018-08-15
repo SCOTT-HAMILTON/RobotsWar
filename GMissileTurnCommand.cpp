@@ -3,7 +3,7 @@
 GMissileTurnCommand::GMissileTurnCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &id, const ParamVar &val) :
     ScriptCommand(block, "gmissileturn"), myid(id), myangle(val)
 {
-    std::cout << "new guided missile turn to command !!" << std::endl;
+    std::cout << "new guided missile turn to command !!\n";
     if (myid.type == CONSTANT)props.insert(std::pair<std::string, double>("id", myid.doubleval));
     else{
         myid.doubleval = NAN;

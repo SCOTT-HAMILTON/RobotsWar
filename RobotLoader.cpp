@@ -16,8 +16,8 @@ std::vector<std::string> RobotLoader::get_directories(const std::string& s)
             }
         }
     }catch(fs::filesystem_error &e){
-        std::cout << "error reading robots dir : " << e.what() << std::endl;
-        std::cout << "app directory : " << fs::current_path() << std::endl;
+        std::cout << "error reading robots dir : " << e.what() << '\n';
+        std::cout << "app directory : " << fs::current_path() << '\n';
         throw e;
     }
 
@@ -43,10 +43,14 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
         robots[i].initScriptVars(arenamap, dt);
         robots[i].getScriptCommands(6, commands);
         robots[i].updateMissiles(dt, arenamap);
-
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
+            if (command == nullptr){
+                std::cout << "command is nullptr !!\n";
+                continue;
+            }
             std::string type = command->getType();
+            std::cout << "command type : " << type << "\n";
             if (type == "move"){
                 command->update();
                 sf::Vector2f pos = robots[i].getPos();
@@ -71,7 +75,7 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 if (block != nullptr){
                     block->addVar("return", id);
                 }else{
-                    std::cout << "nullptr block shootguidedmissile RobotLoader" << std::endl;
+                    std::cout << "nullptr block shootguidedmissile RobotLoader\n";
                 }
             }else if (type == "gmissileturn"){
                 command->update();
@@ -87,7 +91,7 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 if (block != nullptr){
                     block->addVar("return", x);
                 }else{
-                    std::cout << "nullptr block getgmissilex RobotLoader" << std::endl;
+                    std::cout << "nullptr block getgmissilex RobotLoader\n";
                 }
             }else if (type == "getgmissiley"){
                 command->update();
@@ -98,12 +102,12 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 if (block != nullptr){
                     block->addVar("return", y);
                 }else{
-                    std::cout << "nullptr block getgmissiley RobotLoader" << std::endl;
+                    std::cout << "nullptr block getgmissiley RobotLoader\n";
                 }
             }else if (type == "destroyblock"){
                 command->update();
                 int block = static_cast<idtype>(command->getProp("block"));
-                if (block > 4 || block < 0)std::cout << "error block " << block << " is invalid !!" << std::endl;
+                if (block > 4 || block < 0)std::cout << "error block " << block << " is invalid !!\n";
                 int x = static_cast<int>(robots[i].getPos().x+TILE_SIZE/2);
                 int y = static_cast<int>(robots[i].getPos().y+TILE_SIZE/2);
                 x = (x-(x%TILE_SIZE)) / TILE_SIZE;
@@ -125,7 +129,7 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
             }else if (type == "createblock"){
                 command->update();
                 int blockrel = static_cast<idtype>(command->getProp("blockrel"));
-                if (blockrel > 4 || blockrel < 0)std::cout << "error block " << blockrel << " is invalid !!" << std::endl;
+                if (blockrel > 4 || blockrel < 0)std::cout << "error block " << blockrel << " is invalid !!\n";
                 int x = static_cast<int>(robots[i].getPos().x+TILE_SIZE/2);
                 int y = static_cast<int>(robots[i].getPos().y+TILE_SIZE/2);
                 x = (x-(x%TILE_SIZE)) / TILE_SIZE;
@@ -149,7 +153,7 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                 robots[i].initScriptVars(arenamap, dt);
             }else if (type == "print"){
                 command->update();
-                std::cout << robots[i].getName() << " >> " << command->getStringProp("str") << std::endl;
+                std::cout << robots[i].getName() << " >> " << command->getStringProp("str") << '\n';
             }else if (type == "varset"){
                 command->update();
                 //robots[i].setScriptVar(command->getStringProp("varname"), command->getProp("val"));
@@ -159,10 +163,14 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
                     c += command->getProp("nbcmd");
                 }
             }
-        }
-    }
+        }//commands loop
+    }//robots loop
 }
 
 const Robot &RobotLoader::getRobot(std::size_t index){
     if (index<robots.size())return robots[index];
+    else {
+        std::cout << "robot at index " << index << " doesn't exist !!\n";
+        return robots.back();
+    }
 }

@@ -3,7 +3,7 @@
 CreateBlockCommand::CreateBlockCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &blockrel, const ParamVar &blockid) :
     ScriptCommand(block, "createblock")
 {
-    std::cout << "new create block !!" << std::endl;
+    std::cout << "new create block !!\n";
     if (blockrel.type == CONSTANT)props.insert(std::pair<std::string, double>("blockrel", blockrel.doubleval));
     else{
         props.insert(std::pair<std::string, double>("blockrel", blockrel.doubleval));

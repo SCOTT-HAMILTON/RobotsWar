@@ -3,7 +3,7 @@
 getGMissileXCommand::getGMissileXCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &id) :
     ScriptCommand(block, "getgmissilex"), myid(id)
 {
-    std::cout << "new guided missile get X pos command !!" << std::endl;
+    std::cout << "new guided missile get X pos command !!\n";
     if (myid.type == CONSTANT)props.insert(std::pair<std::string, double>("id", myid.doubleval));
     else{
         myid.doubleval = NAN;

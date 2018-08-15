@@ -4,7 +4,7 @@
 MoveCommand::MoveCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &x, const ParamVar &y) :
     ScriptCommand(block, "move"), offsetx(x), offsety(y)
 {
-    std::cout << "new move !!" << std::endl;
+    std::cout << "new move !!\n";
     if (offsetx.type == CONSTANT)props.insert(std::pair<std::string, double>("offsetx", offsetx.doubleval));
     else{
         offsetx.doubleval = NAN;

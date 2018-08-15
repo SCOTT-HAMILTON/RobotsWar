@@ -8,7 +8,7 @@ Map::Map(int nb_tiles_width, int nb_tiles_height) :
     std::srand(std::time(NULL));
     nb_w = nb_tiles_width;
     nb_h = nb_tiles_height;
-    std::cout << "TILE SIZE : " << TILE_SIZE << std::endl;
+    std::cout << "TILE SIZE : " << TILE_SIZE << '\n';
 
 
     chunk_width = static_cast<int>( (nb_tiles_width-nb_tiles_width%2) /2);
@@ -22,9 +22,9 @@ Map::Map(int nb_tiles_width, int nb_tiles_height) :
         }
 
     }
-    for (std::size_t i = 0; i < nb_h; i++){
+    for (int i = 0; i < nb_h; i++){
         idmap.push_back(std::vector<int>());
-        for (std::size_t j = 0; j < nb_w; j++){
+        for (int j = 0; j < nb_w; j++){
             int id = rand()%1000;
             if (id>500)id = 1;
             else id = 0;
@@ -64,7 +64,7 @@ sf::Vector2f Map::getRandomFreeCase(){
         pos = {freecases[index].x, freecases[index].y};
     }
 
-    std::cout << "pos random found : " << pos.x << ", " << pos.y << std::endl;
+    std::cout << "pos random found : " << pos.x << ", " << pos.y << '\n';
 
     return pos;
 }

@@ -15,7 +15,7 @@ public:
 
 private:
     std::shared_ptr<bool> resultLastEntryTest;
-    bool waitingForResult;
+
 };
 
 #endif // WHILEBLOCK_H

@@ -3,7 +3,7 @@
 ElseIfBlock::ElseIfBlock(const std::string &boolexpr, std::weak_ptr<ScriptBlock> precblock) :
     IfBlock(boolexpr), prec_block(precblock)
 {
-    std::cout << "new elseif block id : " << myid << std::endl;
+    std::cout << "new elseif block id : " << myid << '\n';
     curid++;
     type = "elseifblock";
 
@@ -18,7 +18,7 @@ bool ElseIfBlock::canEnter(){
     auto ptrPrecCondBlock = prec_block.lock();
     if (ptrPrecCondBlock == nullptr){
         stat = false;
-        std::cout << "      ERROR block elseif, precedent block pointed is nullptr !!" << std::endl;
+        std::cout << "      ERROR block elseif, precedent block pointed is nullptr !!\n";
         condchain_entered = false;
         return stat;
     }

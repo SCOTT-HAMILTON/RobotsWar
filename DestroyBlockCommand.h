@@ -12,9 +12,6 @@ public:
     DestroyBlockCommand(std::weak_ptr<ScriptBlock> block, const ParamVar &blockparam);
     virtual ~DestroyBlockCommand();
     virtual void update();
-
-private:
-    RELATIF_BLOCK relblock;
 };
 
 #endif // DESTROYBLOCKCOMMAND_H
