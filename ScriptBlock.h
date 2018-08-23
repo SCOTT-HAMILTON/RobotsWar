@@ -31,7 +31,7 @@ public:
     double *getPersonalVarPtr(const std::string &name);
     std::string getVarName(std::size_t index);
     const std::string &getString(const std::string &name);
-    virtual size_t getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands, bool &commandsended);
+    virtual bool getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &commands, bool &commandsended);
     std::weak_ptr<ScriptBlock> getCurBlock();
     std::weak_ptr<ScriptBlock> getLastEndedBlock();
     std::weak_ptr<ScriptBlock> getFunction(const std::string &name);
@@ -80,8 +80,8 @@ protected:
     bool ended;
     bool asloopblock;
     std::vector<std::shared_ptr<ScriptBlock>> blocks;
-    std::map<std::string, std::shared_ptr<ScriptBlock>> functions;
-    std::map<std::string, std::shared_ptr<ScriptBlock>> parentfunctions;
+    std::map<std::string, std::weak_ptr<ScriptBlock>> functions;
+    std::map<std::string, std::weak_ptr<ScriptBlock>> parentfunctions;
 
     CurrenBlock current_block;
     std::weak_ptr<ScriptBlock> loopblock;

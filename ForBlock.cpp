@@ -2,9 +2,12 @@
 
 #include "VarSetCommand.h"
 
+idtype ForBlock::curid = 0;
+
 ForBlock::ForBlock(const std::string &var, const std::string &boolexpr, const std::string &startexpr, const std::string &exprincremente) :
-    ConditionBlock(boolexpr), incrementer(exprincremente), varname(var)
+    ConditionBlock(boolexpr), incrementer(exprincremente), varname(var), myid(curid), first(true), all_cmds_done(true)
 {
+    curid++;
     type = "forblock";
     this->startexpr = startexpr;
     double val = 0;
@@ -46,29 +49,80 @@ double ForBlock::getValFromExpr(const std::string &expr){
     return val;
 }
 
-std::size_t ForBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
-    std::size_t start_size = pCommands.size();
-    bool can = true;
-    double val = getValFromExpr(startexpr);
-    double i = val;
-    pCommands.push_back(commands[0]);
-    start_size--;
-    size_t nb = pCommands.size();
-    while (can && nbCommands-(pCommands.size()-start_size)>0){
-        ScriptBlock::getCommands(nbCommands-(pCommands.size()-start_size), pCommands, commandsended);
-        i+=getValFromExpr(incrementer);
-        addVar(varname, i);
-        pCommands.push_back(commands[1]);
-        start_size--;
-        can = canEnter();
+bool ForBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
+    auto cmd_blockentry = std::shared_ptr<BlockEntryCommand>();
+    bool entry_first_already_set = false;
+    if (pCommands.size()>0 && pCommands.back().lock()->getType() == "blockentry_forblock"){
+        cmd_blockentry = std::static_pointer_cast<BlockEntryCommand>(pCommands.back().lock());
+        entry_first_already_set = true;
     }
-    if (can){
-        commandsended = false;
-    }else {
+    size_t nb_cmds_start = pCommands.size();
+    if (cmd_last_eval_entry != nullptr && !cmd_last_eval_entry->getProp("canenter")){
+        first = true;
         commandsended = true;
+        return true;
+    }
+    if (first){
+        pCommands.push_back(commands[0]);//add init varset!!
+    }
+    first = false;
+    bool can = true;
+
+    if (!all_cmds_done){
+        all_cmds_done = ScriptBlock::getCommands(nbCommands, pCommands, commandsended);
+        if (entry_first_already_set){
+            cmd_last_eval_entry = cmd_blockentry;
+            //std::cout << "already set (in cleaning)!!!\n";
+        }
+        if (!all_cmds_done)return false;
+        pCommands.push_back(commands[1]);
+        if (entry_first_already_set){
+            cmd_blockentry->setProp("nbcmd", pCommands.size()-nb_cmds_start);
+        }
+        entry_first_already_set = false;
+        /*
+        std::cout << "forblock properly ended cmds!! : \n";
+        for (size_t i = 0; i < pCommands.size(); i++){
+            if (pCommands[i].lock()->getType() == "varset"){
+               std::cout << "cmd post clean forblock : " << pCommands[i].lock()->getStringProp("varname") << " = " << pCommands[i].lock()->getStringProp("expr") << "\n";
+            }
+            else std::cout << "cmd post clean forblock : " << pCommands[i].lock()->getType() << "\n";
+        }*/
+
     }
 
-    addVar(varname, val);
 
-    return pCommands.size()-nb;
+
+    while (can && pCommands.size()<=nbCommands){
+        if (entry_first_already_set){
+            cmd_last_eval_entry = cmd_blockentry;
+            //std::cout << "already set!!!\n";
+        }else{
+            cmd_blockentry = std::make_shared<BlockEntryCommand>(me, 0);
+            cmd_last_eval_entry = cmd_blockentry;
+            tempcommands.push_back(cmd_blockentry);
+            pCommands.push_back(cmd_blockentry);
+        }
+        size_t pre_size = pCommands.size();
+        all_cmds_done = ScriptBlock::getCommands(nbCommands, pCommands, commandsended);
+        if (entry_first_already_set){
+            cmd_blockentry->setProp("nbcmd", pCommands.size()-nb_cmds_start);
+        }
+        else {
+            if (pCommands.size()-pre_size == 0)pCommands.erase(pCommands.begin()+pre_size-1);
+            else{
+                cmd_blockentry->setProp("nbcmd", pCommands.size()-pre_size);
+            }
+        }
+        if (all_cmds_done){
+            pCommands.push_back(commands[1]); //add incremente varset
+
+        }else{
+            can = false;
+        }
+        entry_first_already_set = false;
+    }
+    //std::cout << "\n for block " << myid << "get cmds exit !!\n";
+    commandsended = false;
+    return false;
 }

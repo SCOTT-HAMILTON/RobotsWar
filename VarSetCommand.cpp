@@ -3,6 +3,7 @@
 VarSetCommand::VarSetCommand(std::weak_ptr<ScriptBlock> block, const std::string &expr, const std::string &var) :
     ScriptCommand(block, "varset"), expr(expr), varname(var)
 {
+    std::cout << "new varset : " << varname << " = " << expr << "\n";
     strings.insert(std::pair<std::string, std::string>("expr", expr));
     strings.insert(std::pair<std::string, std::string>("varname", varname));
     props.insert(std::pair<std::string, double>("val", value));

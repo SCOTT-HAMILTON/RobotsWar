@@ -47,6 +47,7 @@ bool ScriptReader::parseConditionBlocks(bool &entered, std::string &line, bool &
         std::string condition_expr = line.substr(3, line.size()-4);
         formateCondition(condition_expr);
         auto block = std::make_shared<IfBlock>(condition_expr);
+        blocks.push_back(block);
         mainblock->addBlock(block);
         std::cout << "condition : " << condition_expr << '\n';
     }else if (line.rfind("else if", 0) == 0){
@@ -57,6 +58,7 @@ bool ScriptReader::parseConditionBlocks(bool &entered, std::string &line, bool &
         std::string condition_expr = line.substr(7, line.size()-8);
         formateCondition(condition_expr);
         auto block = std::make_shared<ElseIfBlock>(condition_expr, mainblock->getLastEndedBlock());
+        blocks.push_back(block);
         mainblock->addBlock(block);
         std::cout << "condition : " << condition_expr << '\n';
     }else if (line.rfind("else", 0) == 0){
@@ -64,6 +66,7 @@ bool ScriptReader::parseConditionBlocks(bool &entered, std::string &line, bool &
         mainblock->addBlockEnd();
         std::cout << "new else !! line : " << line << '\n';
         auto block = std::make_shared<ElseBlock>(mainblock->getLastEndedBlock());
+        blocks.push_back(block);
         mainblock->addBlock(block);
     }
     return false;
@@ -94,15 +97,18 @@ bool ScriptReader::parseLoops(bool &entered, std::string &line, bool &continuer)
         formateCondition(condition_expr);
         std::cout << "varname : " <<varname << ", condition_expr : " << condition_expr << ", startexpr : " << startexpr << ", incremeteexpr : " << incremeteexpr << '\n';
         auto block = std::make_shared<ForBlock>(varname, condition_expr, startexpr, incremeteexpr);
-
+        blocks.push_back(block);
         mainblock->addBlock(block);
-        auto commandptr = std::make_shared<VarSetCommand>(block, startexpr, varname);
-        commands.push_back(commandptr);
-        block->addNotPlayedCommand(commandptr);
+        auto command_varset_startexpr = std::make_shared<VarSetCommand>(block, startexpr, varname);
+        commands.push_back(command_varset_startexpr);
 
-        commandptr = std::make_shared<VarSetCommand>(block, varname+"+"+incremeteexpr, varname);
-        commands.push_back(commandptr);
-        block->addNotPlayedCommand(commandptr);
+        block->addNotPlayedCommand(command_varset_startexpr);
+
+        auto command_varset_incremente_expr = std::make_shared<VarSetCommand>(block, varname+"+"+incremeteexpr, varname);
+        commands.push_back(command_varset_incremente_expr);
+        block->addNotPlayedCommand(command_varset_incremente_expr);
+
+        block->me = block;
     }else if (line.rfind("while", 0) == 0){
         entered = true;
         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
@@ -111,6 +117,7 @@ bool ScriptReader::parseLoops(bool &entered, std::string &line, bool &continuer)
         formateCondition(condition_expr);
 
         auto block = std::make_shared<WhileBlock>(condition_expr);
+        blocks.push_back(block);
         mainblock->addBlock(block);
         block->me = block;
         std::cout << "condition : " << condition_expr << '\n';
@@ -502,18 +509,13 @@ void ScriptReader::load(const std::string &path_script){
                         std::string name;
                         line = line.substr(4, line.size()-5);
                         parseFuncStr(line, name, vars);
-                        std::cout << "body definition function \"" << name << "\"\n";
-                        std::cout << "vars : \n";
-                        for (auto &it : vars){
-                            std::cout << "it : " << it << "\n";
-                        }
-                        std::cout << "creating !!!\n";
-                        std::cout << "vars size func definition : " << vars.size() << "\n";
+                        std::cout << "New Function body block " << name << "\n";
                         auto block = std::make_shared<FunctionBlock>(name, vars);
-                        if (block == nullptr) std::cout << "nullptr func block !!\n";
-                        std::cout << "finished !!\n";
+                        blocks.push_back(block);
+
+                        std::cout << "how many owned before : " << block.use_count() << ", attempted : 2\n";
                         mainblock->addFunctionBlock(block);
-                        std::cout << "created !!\n";
+                        std::cout << "how many owned after : " << block.use_count() << "\n";
                     }else if (line.back() == ':'){
                         entered = true;
                         line.erase(remove_if(line.begin(), line.end(), [](auto t){return isspace(t)||t == ':' ;} ), line.end());
@@ -652,7 +654,23 @@ ScriptReader::ScriptReader()
 
 ScriptReader::~ScriptReader()
 {
-    //dtor
+    std::cout << "\n\ndestruction script reader !!\n";
+    std::cout << "commands owned : \n";
+    for (size_t i = 0; i < commands.size(); i++){
+        auto cmd = commands[i];
+        if (cmd == nullptr)std::cout << "nullptr\n";
+        else {
+            std::cout << "cmd " << cmd->getType() << " owned " << cmd.use_count() << "\n";
+        }
+    }
+    std::cout << "\n blocks owned : \n";
+    for (size_t i = 0; i < blocks.size(); i++){
+        auto block = blocks[i];
+        if (block == nullptr)std::cout << "nullptr\n";
+        else {
+            std::cout << "block " << block->getType() << " owned " << block.use_count() << "\n";
+        }
+    }
 }
 void ScriptReader::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands){
     bool tmp;

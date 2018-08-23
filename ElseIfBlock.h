@@ -15,7 +15,7 @@ public:
     ElseIfBlock(const std::string &boolexpr, std::weak_ptr<ScriptBlock> precblock);
     virtual ~ElseIfBlock();
     virtual bool canEnter();
-    virtual size_t getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended);
+    virtual bool getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended);
     idtype getMyId() const;
 
 private:

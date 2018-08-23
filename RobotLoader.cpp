@@ -43,14 +43,15 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
         robots[i].initScriptVars(arenamap, dt);
         robots[i].getScriptCommands(6, commands);
         robots[i].updateMissiles(dt, arenamap);
+
         for (std::size_t c = 0; c < commands.size(); c++){
             std::shared_ptr<ScriptCommand> command = commands[c].lock();
             if (command == nullptr){
-                std::cout << "command is nullptr !!\n";
+                std::cout << "runtime command is nullptr !!\n";
                 continue;
             }
             std::string type = command->getType();
-            std::cout << "command type : " << type << "\n";
+            command->setProp("used", 1);
             if (type == "move"){
                 command->update();
                 sf::Vector2f pos = robots[i].getPos();
@@ -165,6 +166,8 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
             }
         }//commands loop
     }//robots loop
+
+
 }
 
 const Robot &RobotLoader::getRobot(std::size_t index){

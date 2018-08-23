@@ -7,6 +7,9 @@
 ScriptBlock::ScriptBlock(const std::string &type, bool ended) :
     asloopblock(false), index_lastcmd(0), execInitCommands(false)
 {
+
+    std::cout << "\n\n\t Script block " << type <<  " created \n\n\n";
+
     name = type;
     this->parentvars = parentvars;
     this->type = type;
@@ -20,6 +23,7 @@ ScriptBlock::ScriptBlock(const std::string &type, bool ended) :
 
 ScriptBlock::~ScriptBlock()
 {
+    std::cout << "\n\n\t Script block " << type <<  " deleted \n\n\n";
 }
 
 double ScriptBlock::getVar(const std::string &name){
@@ -106,14 +110,25 @@ void ScriptBlock::addString(const std::string &name, const std::string &str){
     }else strings.insert(std::pair<std::string, std::string>(name, str));
 }
 
-size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
+bool ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
     bool ismainblock = type == "mainblock";
     commandsended = false;
     size_t commands_done = 0;
-    tempcommands.clear();
+    //tempcommands.clear();
+    for (int i = tempcommands.size()-1; i >= 0; i--){
+        if (tempcommands[i]->getProp("used"))tempcommands.erase(tempcommands.begin()+i);
+        else{
+            size_t nb_loop_unused = tempcommands[i]->getProp("nb_loop_unused")+1;
+            tempcommands[i]->setProp("nb_loop_unused", nb_loop_unused);
+            if (nb_loop_unused>5){
+                std::cout << "error command still not used : " << tempcommands[i]->getType() << "\n";
+                tempcommands.erase(tempcommands.begin()+i);
+            }
+        }
+    }
     bool launched = false;
     std::vector<std::variant<std::weak_ptr<ScriptBlock>, std::weak_ptr<ScriptCommand>>> *commands_to_drop = &commandsorder;
-
+    if (ismainblock && execInitCommands && !asloopblock)return true;
     if (ismainblock){
         if (asloopblock){
             if (!execInitCommands){
@@ -133,6 +148,7 @@ size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_pt
         if (index_lastcmd>=commands_to_drop->size())index_lastcmd = 0;
         bool last_ended_properly = true;
         for (std::size_t i = index_lastcmd; i < commands_to_drop->size() && commands_done<nbCommands && last_ended_properly; i++){
+            index_lastcmd = i;
             last_ended_properly = true;
             try{
                 auto block = std::get<std::weak_ptr<ScriptBlock>>(commands_to_drop->at(i));
@@ -140,17 +156,19 @@ size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_pt
                 if (ptr != nullptr){
                     if (ptr->getType() == "functionblock");
                     else{
-                        std::cout << "get commands " << ptr->type << "\n";
+                        //std::cout << "get commands " << ptr->type << "\n";
                         tempcommands.push_back( std::make_shared<BlockEntryCommand>(ptr, 0) );
+                        tempcommands.back()->setProp("nb_loop_unused", 0);
+                        tempcommands.back()->setProp("used", 0);
                         pCommands.push_back(tempcommands.back());
                         std::size_t before = pCommands.size();
-                        commands_done += ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
-                        tempcommands.back()->setProp("nbcmd", pCommands.size()-before);
-                        for (size_t i = before+1; i < pCommands.size(); i++){
-                            auto cmd_ptr =pCommands[i].lock();
-                            if (cmd_ptr == nullptr)std::cout << "cmd nullptr\n";
-                            else std::cout << "new cmds : " << cmd_ptr->getType() << "\n";
+                        ptr->getCommands(nbCommands-commands_done, pCommands, last_ended_properly);
+                        commands_done += pCommands.size()-before;
+                        if (pCommands.size()-before == 0){
+                            tempcommands.erase(tempcommands.end()-1);
+                            pCommands.erase(pCommands.end()-1);
                         }
+                        else tempcommands.back()->setProp("nbcmd", pCommands.size()-before);
                     }
                 }else{
                     std::cout << "block ptr of commands order is nullptr !!\n";
@@ -163,20 +181,22 @@ size_t ScriptBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_pt
                     pCommands.push_back(cmd);
                     commands_done++;
                 }else{
+                    std::cout << "command null ptr can't be dropped!!\n";
                 }
             }
             index_lastcmd = i;
         }
-        if (last_ended_properly)index_lastcmd++;
+        if (last_ended_properly){
+            index_lastcmd++;
+
+        }
         if (index_lastcmd>=commands_to_drop->size()){
             index_lastcmd = 0;
-            if (commands_to_drop == &initOutLoopCommandsOrder){
-                execInitCommands = true;
-            }
+            execInitCommands = true;
             commandsended = true;
         }
     }
-    return commands_done;
+    return commandsended;
 }
 
 int ScriptBlock::nbCommands(){
@@ -407,7 +427,10 @@ void ScriptBlock::addFunctionBlock(const std::shared_ptr<ScriptBlock> &funcblock
     if (ptr != nullptr){
         ptr->addFunctionBlock(funcblock);
     }else{
-        functions.emplace(funcblock->name, funcblock);
+        std::cout << "adding function block " << funcblock->name << " to me " << type << std::endl;
+
+        std::cout << "how many now : " << funcblock.use_count() << "\n";
+        functions.emplace(funcblock->name, std::move(funcblock));
         if (vars.size() != 0){
             for (auto it = vars.begin(); it != vars.end(); it++){
                 if (it->first != "return")funcblock->parentvars.emplace(it->first, &it->second);
@@ -496,7 +519,7 @@ void ScriptBlock::addBlockEnd(){
         if (ptr->isEnded())current_block.nb_in_wait--;
         current_block.current_block = std::shared_ptr<ScriptBlock>();
         for (auto it = functions.begin(); it != functions.end(); it++){
-            if (!it->second->isEnded()){
+            if (!it->second.lock()->isEnded()){
                 current_block.current_block = it->second;
             }
         }

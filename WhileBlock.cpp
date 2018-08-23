@@ -31,7 +31,7 @@ bool WhileBlock::canEnter(){
     return stat;
 }
 
-std::size_t WhileBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
+bool WhileBlock::getCommands(std::size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commandsended){
     std::size_t start_size = pCommands.size();
     size_t nb_cmd = 0;
     commandsended = false;

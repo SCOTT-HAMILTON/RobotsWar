@@ -32,7 +32,7 @@ bool ElseBlock::canEnter(){
     return stat;
 }
 
-size_t ElseBlock::getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended){
+bool ElseBlock::getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended){
     prec_indexlastcmd = index_lastcmd;
     return ScriptBlock::getCommands(nbCommands, pCommands, commands_ended);
 }

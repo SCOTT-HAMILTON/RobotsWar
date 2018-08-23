@@ -71,7 +71,8 @@ public:
 
 private:
     std::shared_ptr<ScriptBlock> mainblock;
-    std::vector<std::shared_ptr<ScriptCommand>> commands;
+    std::vector<std::shared_ptr<ScriptCommand>> commands;// storage of all commands created in parser (to avoid nullptr)
+    std::vector<std::shared_ptr<ScriptBlock>> blocks; // storage of all blocks created in parser (to avoid nullptr)
     const static sf::Clock UniversalRobotsTime;
     std::string touseline;
     std::shared_ptr<ScriptCommand> toaddcommand;

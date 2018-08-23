@@ -38,7 +38,7 @@ idtype ElseIfBlock::getMyId() const{
     return myid;
 }
 
-size_t ElseIfBlock::getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended){
+bool ElseIfBlock::getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended){
     prec_indexlastcmd = index_lastcmd;
     return IfBlock::getCommands(nbCommands, pCommands, commands_ended);
 }

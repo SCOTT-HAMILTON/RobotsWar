@@ -14,7 +14,7 @@ public:
     IfBlock(const std::string &boolexpr);
     virtual ~IfBlock();
     virtual bool canEnter();
-    virtual size_t getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended);
+    virtual bool getCommands(size_t nbCommands, std::vector<std::weak_ptr<ScriptCommand>> &pCommands, bool &commands_ended);
 
 protected:
     bool stillCan;
