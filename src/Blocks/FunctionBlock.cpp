@@ -15,8 +15,10 @@ FunctionBlock::FunctionBlock(const std::string &name, const std::vector<std::str
 
 bool FunctionBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrapper<ScriptCommand> > &pCommands, bool &commands_ended, std::vector<std::string> &argval)
 {
-    if (argval.size() != argsname.size())std::cerr << "erreur func " << name << ", getcmds, invalid number of args dropped!!\n";
-    else{
+    if (argval.size() != argsname.size()){
+        std::cerr << "erreur func " << name << ", getcmds, invalid number of args dropped!!\n";
+        std::cerr << "dropped " << argval.size() << ", wanted " << argsname.size() << '\n';
+    }else{
         for (size_t i = 0; i < argsname.size(); i++){
             auto cmd = std::make_unique<VarSetCommand>(static_cast<VarSetCommand&>(commands[0].get()));
             cmd->setVarname(argsname[i]);

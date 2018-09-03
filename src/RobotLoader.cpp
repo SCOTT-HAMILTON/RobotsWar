@@ -113,8 +113,9 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
         for (std::size_t c = 0; c < commands.size(); c++){
             ScriptCommand &command = commands[c].get();
             std::string type = command.getType();
-            if (type == "varset")std::cerr << "runtime command " << command.getStringProp("varname") << " = " << command.getStringProp("expr") << "\n";
+            /*if (type == "varset")std::cerr << "runtime command " << command.getStringProp("varname") << " = " << command.getStringProp("expr") << "\n";
             else std::cerr << "runtime command type : " << type << "\n";
+            */
             command.setProp("used", 1);
             if (type == "move"){
                 command.update();
@@ -213,12 +214,12 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
             }else if (type.rfind("blockentry", 0) == 0){
                 command.update();
                 if (!static_cast<bool>(command.getProp("canenter"))){
-                    std::cerr << "block entry failed!!\n";
+                    //std::cerr << "block entry failed!!\n";
                     c += command.getProp("nbcmd");
                     //std::cerr << "prop : " << command.getProp("nbcmd") << "\n";
                 }
             }
         }//commands loop
-        if (commands.size()>0)std::cerr << "runtime finished*******\n\n";
+        //if (commands.size()>0)std::cerr << "runtime finished*******\n\n";
     }//robots loop
 }

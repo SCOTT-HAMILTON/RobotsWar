@@ -36,7 +36,6 @@ double ScriptBlock::getVar(const std::string &_name){
 }
 
 double *ScriptBlock::getVarPtr(const std::string &_name){
-    std::cerr << "               ASKING FOR VAR PTR " << _name << " block " << type << '\n';
     if (current_block.current_block != nullptr)return current_block.current_block->getVarPtr(_name);
     if (parentvars.find(_name) != parentvars.end())return parentvars.at(_name);
     if (vars.find(_name) != vars.end())return &vars.at(_name);
@@ -132,7 +131,7 @@ bool ScriptBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrap
                 if (block.getType() == "functionblock");
                 else{
 
-                    std::cerr << "get commands of " << block.type << "\n";
+                    //std::cerr << "get commands of " << block.type << "\n";
                     /*std::cerr << "cmds before block get commands : \n";
                     for (auto &cmd : pCommands){
                         if (cmd.get().getType() == "varset")std::cerr << "varset cmd " << cmd.get().getStringProp("varname") << " = " << cmd.get().getStringProp("expr") << "\n";
@@ -170,7 +169,6 @@ bool ScriptBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrap
             catch (const std::bad_variant_access&) {
                 auto cmd = std::get<std::reference_wrapper<ScriptCommand>>(commands_to_drop->at(i));
                 pCommands.push_back(cmd);
-                std::cerr << "block " << type << "adding cmd " << cmd.get().getType() << '\n';
                 commands_done++;
             }
             index_lastcmd = i;
@@ -185,12 +183,11 @@ bool ScriptBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrap
             commandsended = true;
         }
     }
-    std::cerr << "end command get cmds block "<< type << '\n';
-    for (auto &c : pCommands){
+    /*for (auto &c : pCommands){
         auto &cmd = c.get();
         if (cmd.getType() == "varset") std::cerr << "cmd " << cmd.getStringProp("varname") << " = " << cmd.getStringProp("expr") << '\n';
         else std::cerr << "cmd " << cmd.getType() << '\n';
-    }
+    }*/
     return commandsended;
 }
 

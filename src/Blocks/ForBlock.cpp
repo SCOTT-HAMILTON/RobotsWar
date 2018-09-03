@@ -35,6 +35,7 @@ bool ForBlock::canEnter(){
         }
         stat = static_cast<bool>( val );
         condchain_entered = stat;
+        //std::cerr << "expr " << expr << " , stat : " << stat << '\n';
         return stat;
     }
     return stat;
@@ -56,12 +57,11 @@ bool ForBlock::getCommands(std::size_t nbCommands, std::vector<std::reference_wr
     if (!last_could_enter){
         first = true;
         commandsended = true;
-        for (auto &c : pCommands){
+        /*for (auto &c : pCommands){
             auto &cmd = c.get();
-            if (cmd.getType() == "varset") std::cerr << "cmd " << cmd.getStringProp("varname") << " = " << cmd.getStringProp("expr") << '\n';
-            else std::cerr << "cmd " << cmd.getType() << '\n';
-        }
-        std::cerr << "last eval negative for block " << varname << ", can't enter anymore\n";
+        }*/
+        last_could_enter = true;
+        //std::cerr << "last eval negative for block " << varname << ", can't enter anymore\n";
         return true;
     }
     if (first){

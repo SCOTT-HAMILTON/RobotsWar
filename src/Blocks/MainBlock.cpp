@@ -56,7 +56,7 @@ bool MainBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrappe
                 if (block.getType() == "functionblock");
                 else{
 
-                    std::cerr << "get commands of " << block.getType() << "\n";
+                    //std::cerr << "get commands of " << block.getType() << "\n";
                     /*std::cerr << "cmds before block get commands : \n";
                     for (auto &cmd : pCommands){
                         if (cmd.get().getType() == "varset")std::cerr << "varset cmd " << cmd.get().getStringProp("varname") << " = " << cmd.get().getStringProp("expr") << "\n";
@@ -94,7 +94,6 @@ bool MainBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrappe
             catch (const std::bad_variant_access&) {
                 auto cmd = std::get<std::reference_wrapper<ScriptCommand>>(commands_to_drop->at(i));
                 pCommands.push_back(cmd);
-                std::cerr << "block " << type << "adding cmd " << cmd.get().getType() << '\n';
                 commands_done++;
             }
             index_lastcmd = i;

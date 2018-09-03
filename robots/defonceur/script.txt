@@ -10,27 +10,24 @@ double it_total = 0
 
 func recursive_1():
 	for (it = 0, it < MAX1, 1):
-		print("it : "+it+" it_total : "+it_total)
 		result = result + 2
 		it_total = it_total+1
 	
 	end
-	print("at end "+it_total)
+
 end
 
 func recursive_2():
 	for (it2 = 0, it2 < MAX2, 1):
 		recursive_1()
-		print("at end 2 "+it_total)
-		print("it2 : "+it2)
 		it_total = it_total+1
-		//print("at end 3 "+it_total)
+
 	end
-	//print("at end 4 "+it_total)
+
 end
 
 
 
-recursive_2(0)
+recursive_2()
 print("result : "+result)
 print("total iterations : "+it_total)
