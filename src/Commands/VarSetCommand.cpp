@@ -21,13 +21,15 @@ VarSetCommand::~VarSetCommand()
     //dtor
 }
 
-void VarSetCommand::setVarname(const std::string &varname)
+void VarSetCommand::setVarname(const std::string &_varname)
 {
+    varname = _varname;
     strings["varname"] = varname;
 }
 
-void VarSetCommand::setExpr(const std::string &expr)
+void VarSetCommand::setExpr(const std::string &_expr)
 {
+    expr = _expr;
     strings["expr"] = expr;
 }
 
@@ -41,5 +43,7 @@ void VarSetCommand::update(){
     }
     props["val"] = val;
     myblock.addVar(varname, val);
+
+
 
 }

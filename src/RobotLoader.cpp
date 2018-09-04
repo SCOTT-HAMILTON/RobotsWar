@@ -113,9 +113,9 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
         for (std::size_t c = 0; c < commands.size(); c++){
             ScriptCommand &command = commands[c].get();
             std::string type = command.getType();
-            /*if (type == "varset")std::cerr << "runtime command " << command.getStringProp("varname") << " = " << command.getStringProp("expr") << "\n";
-            else std::cerr << "runtime command type : " << type << "\n";
-            */
+            //if (type == "varset")std::cerr << "runtime command " << command.getStringProp("varname") << " = " << command.getStringProp("expr") << "\n";
+            //else std::cerr << "runtime command type : " << type << "\n";
+
             command.setProp("used", 1);
             if (type == "move"){
                 command.update();
@@ -214,8 +214,14 @@ void RobotLoader::updateScripts(float dt, Map &arenamap){
             }else if (type.rfind("blockentry", 0) == 0){
                 command.update();
                 if (!static_cast<bool>(command.getProp("canenter"))){
-                    //std::cerr << "block entry failed!!\n";
-                    c += command.getProp("nbcmd");
+
+                    size_t nb_cmds_to_skip = static_cast<size_t>(command.getProp("nbcmd"));
+                    /*std::cerr << "block entry failed!!\n";
+                    for (size_t i = c+1 ; i < c+nb_cmds_to_skip && i < commands.size(); i++){
+                        if (type == "varset")std::cerr << "skipping runtim command " << commands[i].get().getStringProp("varname") << " = " << command.getStringProp("expr") << "\n";
+                        else std::cerr << "skipping runtime command type : " << commands[i].get().getType() << "\n";
+                    }*/
+                    c+= nb_cmds_to_skip;
                     //std::cerr << "prop : " << command.getProp("nbcmd") << "\n";
                 }
             }

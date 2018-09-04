@@ -23,7 +23,6 @@ bool MainBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrappe
             size_t nb_loop_unused = static_cast<size_t>(tempcommands[static_cast<size_t>(i)]->getProp("nb_loop_unused")+1);
             tempcommands[static_cast<size_t>(i)]->setProp("nb_loop_unused", nb_loop_unused);
             if (nb_loop_unused>5){
-                std::cerr << "error command still not used : " << tempcommands[static_cast<size_t>(i)]->getType() << "\n";
                 tempcommands.erase(tempcommands.begin()+i);
             }
         }
@@ -93,6 +92,9 @@ bool MainBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrappe
             }
             catch (const std::bad_variant_access&) {
                 auto cmd = std::get<std::reference_wrapper<ScriptCommand>>(commands_to_drop->at(i));
+                if (cmd.get().getType() == "print"){
+                    //std::cerr << "print command!!!\n";
+                }
                 pCommands.push_back(cmd);
                 commands_done++;
             }

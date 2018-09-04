@@ -104,14 +104,12 @@ void ScriptBlock::addString(const std::string &_name, const std::string &str){
 bool ScriptBlock::getCommands(size_t nbCommands, std::vector<std::reference_wrapper<ScriptCommand>> &pCommands, bool &commandsended){
     commandsended = false;
     size_t commands_done = 0;
-    //tempcommands.clear();
     for (int i = static_cast<int>(tempcommands.size()-1); i >= 0; i--){
         if (static_cast<bool>(tempcommands[static_cast<size_t>(i)]->getProp("used")))tempcommands.erase(tempcommands.begin()+i);
         else{
             size_t nb_loop_unused = static_cast<size_t>(tempcommands[static_cast<size_t>(i)]->getProp("nb_loop_unused")+1);
             tempcommands[static_cast<size_t>(i)]->setProp("nb_loop_unused", nb_loop_unused);
             if (nb_loop_unused>5){
-                std::cerr << "error command still not used : " << tempcommands[static_cast<size_t>(i)]->getType() << "\n";
                 tempcommands.erase(tempcommands.begin()+i);
             }
         }

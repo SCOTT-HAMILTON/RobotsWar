@@ -25,19 +25,14 @@ ForBlock::~ForBlock()
 }
 
 bool ForBlock::canEnter(){
-    stat = true;
-    if (index_lastcmd == 0){
-        double val;
-        if (evalParserExpr(expr, val)){
-            stat = false;
-            condchain_entered = stat;
-            return stat;
-        }
-        stat = static_cast<bool>( val );
+    double val;
+    if (evalParserExpr(expr, val)){
+        stat = false;
         condchain_entered = stat;
-        //std::cerr << "expr " << expr << " , stat : " << stat << '\n';
         return stat;
     }
+    stat = static_cast<bool>( val );
+    condchain_entered = stat;
     return stat;
 }
 
@@ -73,9 +68,10 @@ bool ForBlock::getCommands(std::size_t nbCommands, std::vector<std::reference_wr
     bool first_blockentrytest_added = false;
     size_t start_size = 0;
     if (!all_cmds_done){
+        //std::cerr << "need to finish all cmds " << expr << ".\n";
         all_cmds_done = ScriptBlock::getCommands(nbCommands, pCommands, commandsended);
         if (!all_cmds_done)return false;
-        pCommands.push_back(commands[1]);
+        pCommands.push_back(commands[1]);//add incremente varset
     }
 
 

@@ -1,9 +1,9 @@
 double starttime = time
 print("Start")
 
-double MAX1 = 10
+double MAX1 = 1
 double MAXLOOP = 1
-double MAX2 = 5
+double MAX2 = 1
 
 double result = 0
 double it_total = 0
@@ -19,6 +19,7 @@ end
 
 func recursive_2():
 	for (it2 = 0, it2 < MAX2, 1):
+		print("it2 "+it2)
 		recursive_1()
 		it_total = it_total+1
 
@@ -26,8 +27,19 @@ func recursive_2():
 
 end
 
+func 3_while():
+	double test = 0
+	while (test < 3):
+		print("test while "+test);
+		test = test+1
+	end
+	print("test : "+test);
+	return test
+end
 
-
+double retval = 0
+retval = 3_while()
+print("retval : "+retval)
 recursive_2()
 print("result : "+result)
 print("total iterations : "+it_total)
